@@ -56,7 +56,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
         `;
       }
       
-      const webSocketStatus = "disconnect";
+      let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
         if (apiSocket.readyState === WebSocket.OPEN) {
           webSocketStatus = "connect";
