@@ -18,9 +18,20 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new MyWebSocketHandler(), "/api").setAllowedOrigins("*"); // CORS設定
+        registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOrigins("*");
+        registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOrigins("*");
+        registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOrigins("*");
     }
 
+    private static class ApiWebSocketHandler extends MyWebSocketHandler {
+    }
+
+    private static class ImageWebSocketHandler extends MyWebSocketHandler {
+    }
+
+    private static class ImageJsonWebSocketHandler extends MyWebSocketHandler {
+    }
+    
     private static class MyWebSocketHandler extends TextWebSocketHandler {
 
         @Override
@@ -36,7 +47,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
         }
 
         @Override
-        public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) throws Exception {
+        public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status)
+                throws Exception {
             logger.info("Connection closed: " + session.getId() + ", Status: " + status);
         }
 
