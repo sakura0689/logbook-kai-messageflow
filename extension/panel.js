@@ -1,7 +1,7 @@
 // WebSocketの設定
 const apiSocket       = new WebSocket('ws://localhost:8890/api');
-const imageSocket     = new WebSocket('ws://localhost:8891/image');
-const imageJsonSocket = new WebSocket('ws://localhost:8892/imageJson');
+const imageSocket     = new WebSocket('ws://localhost:8890/image');
+const imageJsonSocket = new WebSocket('ws://localhost:8890/imageJson');
 
 // WebSocketのエラーハンドリング
 apiSocket.onerror = (error) => console.error("api WebSocket Error:" , error);
