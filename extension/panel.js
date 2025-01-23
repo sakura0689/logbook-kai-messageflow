@@ -1,34 +1,37 @@
 // WebSocketの設定
 const createWebSocket = (path, statusElementId) => {
-    let hasConnected = false;
-    let reconnectAttempts = 0;
+    let hasConnected = false; //初回起動時に接続できたかフラグ
     let socket = null;
-    let isReconnecting = true;
-    let reconnectDelay = 1000; // 初期遅延
+    let nowRetryCount = 0; //リトライカウント
+    const maxRetryCount = 12;
+    let isReconnecting = true; //リトライフラグ Maxリトライを越えて
+    let reconnectDelay = 10000; // 初期遅延
     const maxReconnectDelay = 60000; // 最大遅延
     
-    const maxRetryCount = 12;
     const statusElement = document.getElementById(statusElementId);
     const indicator = statusElement.querySelector(".status-indicator");
     const statusText = statusElement.querySelector(".status-text");
 
-    const updateStatus = (status, attempts = null) => {
+    const updateStatus = (status, retryCount = null, reconnectDelay = null) => {
         indicator.className = `status-indicator ${status}`;
         let statusMessage = `${path.substring(1)}: ${status}`;
-        if (attempts !== null) {
-            statusMessage += ` (${attempts} retries)`;
+        if (retryCount !== null) {
+            statusMessage += ` (${retryCount} retries next ${reconnectDelay}ms)`;
         }
         statusText.textContent = statusMessage;
     };
 
     const connect = () => {
+        if (!isReconnecting) return;
+        
         socket = new WebSocket(`ws://localhost:8890${path}`);
         updateStatus("connecting");
 
         socket.onopen = () => {
             console.log(`${path} WebSocket opened.`);
             hasConnected = true;
-            reconnectAttempts = 0;
+            nowRetryCount = 0;
+            reconnectDelay = 10000;
             updateStatus("connect");
         };
 
@@ -45,18 +48,19 @@ const createWebSocket = (path, statusElementId) => {
 
     const handleErrorOrClose = () => {
         if (!hasConnected) {
+            isReconnecting = false;
             console.log(`${path} WebSocket initial connection failed. Not retrying.`);
             updateStatus("disconnect");
         } else {
             if (!isReconnecting) return;
 
-            reconnectAttempts++;
-            if (reconnectAttempts <= maxRetryCount) {
-                console.log(`${path} WebSocket error/close. Attempting to reconnect (${reconnectAttempts}/${maxRetryCount})...`);
-                updateStatus("reconnect", reconnectAttempts);
+            nowRetryCount++;
+            if (nowRetryCount <= maxRetryCount) {
+                console.log(`${path} WebSocket error/close. Attempting to reconnect (${nowRetryCount}/${maxRetryCount})...`);
+                updateStatus("reconnect", nowRetryCount, reconnectDelay);
 
                 setTimeout(() => {
-                    console.log(`Attempting to reconnect to ${path}... (Retry ${reconnectAttempts})`);
+                    console.log(`Attempting to reconnect to ${path}... (Retry ${nowRetryCount})`);
                     if (path === '/api') {
                         apiSocket.connect();
                     } else if (path === '/image') {
@@ -70,8 +74,6 @@ const createWebSocket = (path, statusElementId) => {
                 isReconnecting = false;
                 console.log(`${path} WebSocket reconnection attempts exceeded. Not retrying.`);
                 updateStatus("disconnect");
-                reconnectAttempts = 0;
-                reconnectDelay = 1000; // リセット
             }
         }
     };
@@ -82,20 +84,6 @@ const createWebSocket = (path, statusElementId) => {
         connect: connect,
         getSocket: () => socket // socketを取得するgetterを追加
     };
-};
-
-// リトライ関数
-const reconnect = (path, statusElementId, reconnectAttempts) => {
-    setTimeout(() => {
-        console.log(`Attempting to reconnect to ${path}... (Retry ${reconnectAttempts})`);
-        if (path === '/api') {
-            apiSocket.connect(); // connect関数を呼び出す
-        } else if (path === '/image') {
-            imageSocket.connect();
-        } else if (path === '/imageJson') {
-            imageJsonSocket.connect();
-        }
-    }, 10000); // 10秒
 };
 
 // WebSocketの初期接続
