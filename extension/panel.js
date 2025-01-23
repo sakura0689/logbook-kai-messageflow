@@ -1,12 +1,89 @@
 // WebSocketの設定
-const apiSocket       = new WebSocket('ws://localhost:8890/api');
-const imageSocket     = new WebSocket('ws://localhost:8890/image');
-const imageJsonSocket = new WebSocket('ws://localhost:8890/imageJson');
+const createWebSocket = (path, statusElementId) => {
+    let hasConnected = false;
+    let reconnectAttempts = 0;
+    let socket = null;
 
-// WebSocketのエラーハンドリング
-apiSocket.onerror = (error) => console.error("api WebSocket Error:" , error);
-imageSocket.onerror = (error) => console.error("image WebSocket Error:" , error);
-imageJsonSocket.onerror = (error) => console.error("ImageJson WebSocket Error:" , error);
+    const maxRetryCount = 12;
+    const statusElement = document.getElementById(statusElementId);
+    const indicator = statusElement.querySelector(".status-indicator");
+    const statusText = statusElement.querySelector(".status-text");
+
+    const updateStatus = (status, attempts = null) => {
+        indicator.className = `status-indicator ${status}`;
+        let statusMessage = `${path.substring(1)}: ${status}`;
+        if (attempts !== null) {
+            statusMessage += ` (${attempts} retries)`;
+        }
+        statusText.textContent = statusMessage;
+    };
+
+    const connect = () => {
+        socket = new WebSocket(`ws://localhost:8890${path}`);
+        updateStatus("connecting");
+
+        socket.onopen = () => {
+            console.log(`${path} WebSocket opened.`);
+            hasConnected = true;
+            reconnectAttempts = 0;
+            updateStatus("connect");
+        };
+
+        socket.onerror = (error) => {
+            console.error(`${path} WebSocket Error:`, error);
+            handleErrorOrClose();
+        };
+
+        socket.onclose = (event) => {
+            console.log(`${path} WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`);
+            handleErrorOrClose();
+        };
+    };
+
+    const handleErrorOrClose = () => {
+        if (!hasConnected) {
+            console.log(`${path} WebSocket initial connection failed. Not retrying.`);
+            updateStatus("disconnect");
+        } else {
+            reconnectAttempts++;
+            if (reconnectAttempts <= maxRetryCount) {
+                console.log(`${path} WebSocket error/close. Attempting to reconnect (${reconnectAttempts}/${maxRetryCount})...`);
+                updateStatus("reconnect", reconnectAttempts);
+                reconnect(path, statusElementId, reconnectAttempts);
+            } else {
+                console.log(`${path} WebSocket reconnection attempts exceeded. Not retrying.`);
+                updateStatus("disconnect");
+                reconnectAttempts = 0;
+            }
+        }
+    };
+
+    connect(); // 初回接続
+
+    return { // socketオブジェクトを返すように修正
+        connect: connect,
+        getSocket: () => socket // socketを取得するgetterを追加
+    };
+};
+
+// リトライ関数
+const reconnect = (path, statusElementId, reconnectAttempts) => {
+    setTimeout(() => {
+        console.log(`Attempting to reconnect to ${path}... (Retry ${reconnectAttempts})`);
+        if (path === '/api') {
+            apiSocket.connect(); // connect関数を呼び出す
+        } else if (path === '/image') {
+            imageSocket.connect();
+        } else if (path === '/imageJson') {
+            imageJsonSocket.connect();
+        }
+    }, 10000); // 10秒
+};
+
+// WebSocketの初期接続
+let apiSocket = createWebSocket('/api', "api-status");
+let imageSocket = createWebSocket('/image', "image-status");
+let imageJsonSocket = createWebSocket('/imageJson', "imageJson-status");
 
 // 最大表示件数
 const MAX_LOGS = 20;
@@ -58,19 +135,19 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       
       let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
-        if (apiSocket.readyState === WebSocket.OPEN) {
-          webSocketStatus = "connect";
-        }
+          if (apiSocket && apiSocket.getSocket() && apiSocket.getSocket().readyState === WebSocket.OPEN) {
+              webSocketStatus = "connect";
+          }
       } else {
-        if (encoding === "base64") {
-          if (imageSocket.readyState === WebSocket.OPEN) {
-            webSocketStatus = "connect";
+          if (encoding === "base64") {
+              if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === WebSocket.OPEN) {
+                  webSocketStatus = "connect";
+              }
+          } else {
+              if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === WebSocket.OPEN) {
+                  webSocketStatus = "connect";
+              }
           }
-        } else {
-          if (imageJsonSocket.readyState === WebSocket.OPEN) {
-            webSocketStatus = "connect";
-          }
-        }
       }
 
       // WebSocketステータス表示のスタイル

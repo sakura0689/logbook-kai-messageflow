@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <script src="./panel.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,10 +47,41 @@
             margin: 5px 0;
             font-size: 0.95em;
         }
+        
+        #websocket-status {
+            margin-top: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .connect { background-color: green; }
+        .reconnect { background-color: yellow; }
+        .disconnect { background-color: red; }
     </style>
 </head>
 <body>
     <h2>通信ログ</h2>
+    <div id="websocket-status">
+        <div id="api-status">
+            <span class="status-indicator disconnect"></span>
+            <span class="status-text">api: disconnect</span>
+        </div>
+        <div id="image-status">
+            <span class="status-indicator disconnect"></span>
+            <span class="status-text">image: disconnect</span>
+        </div>
+        <div id="imageJson-status">
+            <span class="status-indicator disconnect"></span>
+            <span class="status-text">imageJson: disconnect</span>
+        </div>
+    </div>
     <div id="request"></div>
+    <script src="./panel.js"></script>
 </body>
 </html>
