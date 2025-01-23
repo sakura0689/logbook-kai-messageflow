@@ -204,6 +204,11 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
 
       const requestsContainer = document.getElementById("request");
 
+      const cacheDispCheckBox = document.getElementById("show-cache-checkbox");
+      if (!cacheDispCheckBox.checked && isCacheLike) {
+        return;
+      }
+      
       // 新しいリクエストを追加
       const requestElement = document.createElement("div");
       requestElement.className = "request";
