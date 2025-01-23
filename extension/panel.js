@@ -5,7 +5,7 @@ const createWebSocket = (path, statusElementId) => {
     let nowRetryCount = 0; //リトライカウント
     const maxRetryCount = 12;
     let isReconnecting = true; //リトライフラグ Maxリトライを越えて
-    let reconnectDelay = 10000; // 初期遅延
+    let reconnectDelay = 3000; // 初期遅延
     const maxReconnectDelay = 60000; // 最大遅延
     
     const statusElement = document.getElementById(statusElementId);
@@ -31,7 +31,7 @@ const createWebSocket = (path, statusElementId) => {
             console.log(`${path} WebSocket opened.`);
             hasConnected = true;
             nowRetryCount = 0;
-            reconnectDelay = 10000;
+            reconnectDelay = 3000;
             updateStatus("connect");
         };
 
@@ -97,6 +97,36 @@ const MAX_LOGS = 20;
 // 現在のリクエストログのリスト
 const logs = [];
 
+const createSendData = (method, encoding, fullUrl, uri, queryString, queryParams, postData, responseBody) => {
+    // JSON文字列に変換する前にエスケープ処理
+    const escapedQueryParams = JSON.stringify(queryParams);
+    const escapedPostData = typeof postData === 'string' ? JSON.stringify(postData) : JSON.stringify(postData || null);
+
+    let escapedResponseBody = "";
+    if (typeof responseBody === 'string') {
+        if (encoding === 'base64') {
+            escapedResponseBody = responseBody; // base64の場合はそのまま
+        } else {
+            escapedResponseBody = JSON.stringify(responseBody); //svdata=JSONの形なのでエスケープ実施
+        }
+    } else if (responseBody) {
+        escapedResponseBody = JSON.stringify(responseBody); //svdata=JSONの形なのでエスケープ実施(多分到達しないはず)
+    }
+    
+    const sendData = {
+        method: method,
+        encoding: encoding,
+        fullUrl: fullUrl,
+        uri: uri,
+        queryString: queryString,
+        queryParams: escapedQueryParams,
+        postData: escapedPostData,
+        responseBody: escapedResponseBody
+    };
+
+    return JSON.stringify(sendData);
+};
+
 // ネットワークリクエストの監視を開始
 chrome.devtools.network.onRequestFinished.addListener((request) => {
   const fullUrl = request.request.url;
@@ -131,27 +161,54 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
 
       // リクエストボディの取得（POSTの場合のみ）
       let requestBodyHtml = "";
+      let postData = "";
       if (method === "POST" && request.request.postData) {
-        const postData = request.request.postData.text || "(No Request Body)";
+        postData = request.request.postData.text || "";
         requestBodyHtml = `
           <h4>Request Body:</h4>
           <pre>${postData}</pre>
         `;
       }
       
+      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
+      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
+      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
+
+      //送信処理
       let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
           if (apiSocket && apiSocket.getSocket() && apiSocket.getSocket().readyState === WebSocket.OPEN) {
               webSocketStatus = "connect";
+              const encodeToSend = encoding || ""; 
+              sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
+              try {
+                  apiSocket.getSocket().send(sendData);
+              } catch (error) {
+                  console.log(`apiSocket error send data : ${sendData}` , error);            
+              }
           }
-      } else {
+      } else if (!isCacheLike) {
+          //キャッシュの場合は処理しない
           if (encoding === "base64") {
               if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === WebSocket.OPEN) {
                   webSocketStatus = "connect";
+                  sendData = createSendData(method, encoding, fullUrl, uri, queryString, queryParams, postData, content);
+                  try {
+                      imageSocket.getSocket().send(sendData);
+                  } catch (error) {
+                      console.log(`imageSocket error send data : ${sendData}` , error);            
+                  }
               }
           } else {
               if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === WebSocket.OPEN) {
                   webSocketStatus = "connect";
+                  const encodeToSend = encoding || ""; 
+                  sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
+                  try {
+                      imageJsonSocket.getSocket().send(sendData);
+                  } catch (error) {
+                      console.log(`imageJsonSocket error send data : ${sendData}` , error);            
+                  }
               }
           }
       }
@@ -165,10 +222,6 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       // レスポンスの表示色を設定
       const responseColor =
         encoding === "base64" ? "rgba(255, 200, 200, 0.5)" : "rgba(200, 220, 255, 0.5)";
-
-      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
-      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
-      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
 
       // 折り畳み時の背景色（キャッシュの場合は濃いグレー）
       const headerColor = isCacheLike ? "rgba(50, 50, 50, 0.8)" : "#eee";
