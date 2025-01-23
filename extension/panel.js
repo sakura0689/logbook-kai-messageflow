@@ -3,7 +3,10 @@ const createWebSocket = (path, statusElementId) => {
     let hasConnected = false;
     let reconnectAttempts = 0;
     let socket = null;
-
+    let isReconnecting = true;
+    let reconnectDelay = 1000; // 初期遅延
+    const maxReconnectDelay = 60000; // 最大遅延
+    
     const maxRetryCount = 12;
     const statusElement = document.getElementById(statusElementId);
     const indicator = statusElement.querySelector(".status-indicator");
@@ -45,15 +48,30 @@ const createWebSocket = (path, statusElementId) => {
             console.log(`${path} WebSocket initial connection failed. Not retrying.`);
             updateStatus("disconnect");
         } else {
+            if (!isReconnecting) return;
+
             reconnectAttempts++;
             if (reconnectAttempts <= maxRetryCount) {
                 console.log(`${path} WebSocket error/close. Attempting to reconnect (${reconnectAttempts}/${maxRetryCount})...`);
                 updateStatus("reconnect", reconnectAttempts);
-                reconnect(path, statusElementId, reconnectAttempts);
+
+                setTimeout(() => {
+                    console.log(`Attempting to reconnect to ${path}... (Retry ${reconnectAttempts})`);
+                    if (path === '/api') {
+                        apiSocket.connect();
+                    } else if (path === '/image') {
+                        imageSocket.connect();
+                    } else if (path === '/imageJson') {
+                        imageJsonSocket.connect();
+                    }
+                    reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay); // 指数関数的バックオフ
+                }, reconnectDelay);
             } else {
+                isReconnecting = false;
                 console.log(`${path} WebSocket reconnection attempts exceeded. Not retrying.`);
                 updateStatus("disconnect");
                 reconnectAttempts = 0;
+                reconnectDelay = 1000; // リセット
             }
         }
     };
