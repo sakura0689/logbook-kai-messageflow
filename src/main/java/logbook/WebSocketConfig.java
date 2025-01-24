@@ -21,9 +21,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOrigins("*");
-        registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOrigins("*");
-        registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOrigins("*");
+        registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
+        registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
+        registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
     }
     
     private static class ApiWebSocketHandler extends MyWebSocketHandler {

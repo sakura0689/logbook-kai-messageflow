@@ -23,12 +23,12 @@ const createWebSocket = (path, statusElementId) => {
 
     const connect = () => {
         if (!isReconnecting) return;
-        
-        socket = new WebSocket(`ws://localhost:8890${path}`);
+
+        socket = new SockJS(`http://localhost:8890${path}`);
         updateStatus("connecting");
 
         socket.onopen = () => {
-            console.log(`${path} WebSocket opened.`);
+            console.log(`${path} SockJS WebSocket opened.`);
             hasConnected = true;
             nowRetryCount = 0;
             reconnectDelay = 3000;
@@ -36,27 +36,27 @@ const createWebSocket = (path, statusElementId) => {
         };
 
         socket.onerror = (error) => {
-            console.error(`${path} WebSocket Error:`, error);
+            console.error(`${path} SockJS WebSocket Error:`, error);
             handleErrorOrClose();
         };
 
         socket.onclose = (event) => {
-            console.log(`${path} WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`);
+            console.log(`${path} SockJS WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`);
             handleErrorOrClose();
         };
     };
-
+    
     const handleErrorOrClose = () => {
         if (!hasConnected) {
             isReconnecting = false;
-            console.log(`${path} WebSocket initial connection failed. Not retrying.`);
+            console.log(`${path} SockJS WebSocket initial connection failed. Not retrying.`);
             updateStatus("disconnect");
         } else {
             if (!isReconnecting) return;
 
             nowRetryCount++;
             if (nowRetryCount <= maxRetryCount) {
-                console.log(`${path} WebSocket error/close. Attempting to reconnect (${nowRetryCount}/${maxRetryCount})...`);
+                console.log(`${path} SockJS WebSocket error/close. Attempting to reconnect (${nowRetryCount}/${maxRetryCount})...`);
                 updateStatus("reconnect", nowRetryCount, reconnectDelay);
 
                 setTimeout(() => {
@@ -72,12 +72,12 @@ const createWebSocket = (path, statusElementId) => {
                 }, reconnectDelay);
             } else {
                 isReconnecting = false;
-                console.log(`${path} WebSocket reconnection attempts exceeded. Not retrying.`);
+                console.log(`${path} SockJS WebSocket reconnection attempts exceeded. Not retrying.`);
                 updateStatus("disconnect");
             }
         }
     };
-
+    
     connect(); // 初回接続
 
     return { // socketオブジェクトを返すように修正
@@ -177,7 +177,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       //送信処理
       let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
-          if (apiSocket && apiSocket.getSocket() && apiSocket.getSocket().readyState === WebSocket.OPEN) {
+          if (apiSocket && apiSocket.getSocket() && apiSocket.getSocket().readyState === SockJS.OPEN) {
               webSocketStatus = "connect";
               const encodeToSend = encoding || ""; 
               sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
@@ -190,7 +190,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       } else if (!isCacheLike) {
           //キャッシュの場合は処理しない
           if (encoding === "base64") {
-              if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === WebSocket.OPEN) {
+              if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
                   sendData = createSendData(method, encoding, fullUrl, uri, queryString, queryParams, postData, content);
                   try {
@@ -200,7 +200,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
                   }
               }
           } else {
-              if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === WebSocket.OPEN) {
+              if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
                   const encodeToSend = encoding || ""; 
                   sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
