@@ -18,12 +18,27 @@ import jakarta.websocket.WebSocketContainer;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
-
+    
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
-        registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
-        registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOriginPatterns("*").withSockJS().setHeartbeatTime(30000).setWebSocketEnabled(true);
+        registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOriginPatterns("*")
+                                                                                                    .withSockJS()
+                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setWebSocketEnabled(true)
+                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
+        
+        registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOriginPatterns("*")
+                                                                                                    .withSockJS()
+                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setWebSocketEnabled(true)
+                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
+                                                                                                        
+        registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOriginPatterns("*")
+                                                                                                    .withSockJS()
+                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setWebSocketEnabled(true)
+                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
+                                                                                                        
     }
     
     private static class ApiWebSocketHandler extends MyWebSocketHandler {
