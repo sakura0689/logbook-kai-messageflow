@@ -67,6 +67,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
             logger.info("received message: " + payload);
+            logger.info("received message size : " + payload.length());
             
             session.sendMessage(new TextMessage("ok"));
         }
