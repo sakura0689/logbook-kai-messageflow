@@ -6,7 +6,13 @@
     <groupId>logbook</groupId>
     <artifactId>logbook-kai-messageflow</artifactId>
     <version>0.0.1</version>
-
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+    
     <build>
         <plugins>
             <plugin>
