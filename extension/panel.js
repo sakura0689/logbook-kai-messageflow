@@ -235,6 +235,8 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
         `
         : "<p><strong>Timing Information:</strong> (No timing data available)</p>";
 
+      const contentSize = content ? new Blob([content]).size : 0;
+        
       const requestHtml = `
         <div class="request-header" style="cursor: pointer; background-color: ${headerColor};">
           <strong>Endpoint:</strong> ${endpointDisplay} ${webSocketStatusDisplay}
@@ -251,6 +253,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           ${requestBodyHtml}
           <h4>Response Body:</h4>
           <pre style="background-color: ${responseColor};">${content || "(No Response Body)"}</pre>
+          <p><strong>Content Size:</strong> ${contentSize || "(Unknown Size)"}</p>
           ${timings}
         </div>
       `;
