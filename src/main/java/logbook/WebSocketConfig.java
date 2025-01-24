@@ -2,6 +2,7 @@ package logbook;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -9,15 +10,25 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
-import jakarta.websocket.ContainerProvider;
-import jakarta.websocket.WebSocketContainer;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
+    
+    /**
+     * https://docs.spring.io/spring-framework/reference/web/websocket/server.html#websocket-server-runtime-configuration
+     * @return
+     */
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(32 * 1024 * 1024);
+        container.setMaxBinaryMessageBufferSize(32 * 1024 * 1024);
+        return container;
+    }
     
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
@@ -69,14 +80,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status)
                 throws Exception {
             logger.info("Connection closed: " + session.getId() + ", Status: " + status);
-            
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            if (container instanceof org.apache.tomcat.websocket.WsWebSocketContainer wsContainer) {
-                logger.info("WebSocket Config - MaxTextMessageBufferSize: " + wsContainer.getDefaultMaxTextMessageBufferSize());
-                logger.info("WebSocket Config - MaxBinaryMessageBufferSize: " + wsContainer.getDefaultMaxBinaryMessageBufferSize());
-            } else {
-                logger.info("WebSocket container : " + container.toString());
-            }
         }
 
         @Override
