@@ -10,6 +10,9 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import jakarta.websocket.ContainerProvider;
+import jakarta.websocket.WebSocketContainer;
+
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
@@ -22,7 +25,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOrigins("*");
         registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOrigins("*");
     }
-
+    
     private static class ApiWebSocketHandler extends MyWebSocketHandler {
     }
 
@@ -38,7 +41,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
             logger.info("received message: " + payload);
-            session.sendMessage(new TextMessage("echo: " + payload)); // 受信したメッセージをそのまま返す
+            
+            session.sendMessage(new TextMessage("ok"));
         }
 
         @Override
@@ -50,6 +54,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status)
                 throws Exception {
             logger.info("Connection closed: " + session.getId() + ", Status: " + status);
+            
+            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+            if (container instanceof org.apache.tomcat.websocket.WsWebSocketContainer wsContainer) {
+                logger.info("WebSocket Config - MaxTextMessageBufferSize: " + wsContainer.getDefaultMaxTextMessageBufferSize());
+                logger.info("WebSocket Config - MaxBinaryMessageBufferSize: " + wsContainer.getDefaultMaxBinaryMessageBufferSize());
+            } else {
+                logger.info("WebSocket container : " + container.toString());
+            }
         }
 
         @Override
