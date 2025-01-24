@@ -1,2 +1,7 @@
+# https://docs.spring.io/spring-boot/appendix/application-properties/index.html#appendix.application-properties.server
 server:
   port: 8890
+  tomcat:
+    keep-alive-timeout: -1 # 無制限
+    max-swallow-size: -1  # 無制限
+    max-http-form-post-size: 32MB
