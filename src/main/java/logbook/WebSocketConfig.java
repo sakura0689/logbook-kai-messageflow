@@ -12,6 +12,8 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
+import logbook.queue.QueueHolder;
+
 @Configuration
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
@@ -53,12 +55,66 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
     
     private static class ApiWebSocketHandler extends MyWebSocketHandler {
+        @Override
+        public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+            String payload = message.getPayload();
+            logger.info("api received message size : " + payload.length());
+
+            // シャットダウン中ならスキップ
+            if (QueueHolder.getInstance().isShuttingDown()) {
+                logger.warn("API queue is shutting down. Skipping message processing.");
+                logger.warn("api received message : " + payload);
+                session.sendMessage(new TextMessage("shutdown"));
+                return;
+            }
+            
+            //Queueに登録
+            QueueHolder.getInstance().getAPIQueue().offer(payload);
+            
+            session.sendMessage(new TextMessage("ok"));
+        }
     }
 
     private static class ImageWebSocketHandler extends MyWebSocketHandler {
+        @Override
+        public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+            String payload = message.getPayload();
+            logger.info("image received message size : " + payload.length());
+            
+            // シャットダウン中ならスキップ
+            if (QueueHolder.getInstance().isShuttingDown()) {
+                logger.warn("Image queue is shutting down. Skipping message processing.");
+                logger.warn("Image received message : " + payload);
+                session.sendMessage(new TextMessage("shutdown"));
+                return;
+            }
+            
+            //Queueに登録
+            QueueHolder.getInstance().getImageQueue().offer(payload);
+            
+            session.sendMessage(new TextMessage("ok"));
+        }
     }
 
     private static class ImageJsonWebSocketHandler extends MyWebSocketHandler {
+        @Override
+        public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+            String payload = message.getPayload();
+            logger.info("received message size : " + payload.length());
+
+            // シャットダウン中ならスキップ
+            if (QueueHolder.getInstance().isShuttingDown()) {
+                logger.warn("ImageJson queue is shutting down. Skipping message processing.");
+                logger.warn("ImageJson received message : " + payload);
+                session.sendMessage(new TextMessage("shutdown"));
+                return;
+            }
+            
+            //Queueに登録
+            QueueHolder.getInstance().getImageJsonQueue().offer(payload);
+
+            session.sendMessage(new TextMessage("ok"));
+        }
     }
     
     private static class MyWebSocketHandler extends TextWebSocketHandler {
@@ -66,7 +122,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
-            logger.info("received message: " + payload);
             logger.info("received message size : " + payload.length());
             
             session.sendMessage(new TextMessage("ok"));
