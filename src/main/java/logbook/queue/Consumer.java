@@ -1,9 +1,17 @@
 package logbook.queue;
 
+import java.io.StringReader;
 import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
 
 public class Consumer implements Runnable {
     
@@ -36,7 +44,49 @@ public class Consumer implements Runnable {
                 }
                 String data = queue.poll();
                 if (data != null) {
-                    logger.debug(queueName + " : " + data);
+                    try {
+                        StringReader reader = new StringReader(data);
+                        JsonObject json;
+                        try (JsonReader jsonreader = Json.createReader(reader)) {
+                            json = jsonreader.readObject();
+                        }
+                        if (json != null) {
+                            WebClient webClient = WebClient.create("http://localhost:8890");
+                            JsonValue methodJsonVal = json.get("method");
+                            JsonValue uriJsonVal = json.get("uri");
+                            
+                            String method = "";
+                            if (methodJsonVal instanceof JsonString jsonString) {
+                                method = jsonString.getString();
+                            }
+                            String uri = "";
+                            if (uriJsonVal instanceof JsonString jsonString) {
+                                uri = jsonString.getString();
+                            }
+                            
+                            if ("POST".equals(method)) {
+                                JsonValue postDataJsonVal = json.get("postData");
+                                String postData = "";
+                                if (postDataJsonVal instanceof JsonString jsonString) {
+                                    postData = jsonString.getString();
+                                }
+                                
+                                String response = webClient.post()
+                                        .uri(uri)
+                                        .header("Content-Type", "application/x-www-form-urlencoded")
+                                        .bodyValue(postData)
+                                        .retrieve()
+                                        .bodyToMono(String.class)
+                                        .block();
+                                logger.debug("response : " + response);
+                            }
+                        } else {
+                            logger.error("JsonのParseが出来ませんでした : " + data);
+                        }
+                        
+                    } catch (Exception e) {
+                        logger.debug(queueName + " : " + data, e);
+                    }
                 } else {
                     if (isShutDown) {
                         //shutdownを受け取り、Queueが空なら処理終了
