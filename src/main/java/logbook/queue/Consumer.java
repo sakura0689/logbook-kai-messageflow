@@ -12,6 +12,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
+import logbook.cache.CacheHolder;
+import logbook.utils.DateTimeUtils;
+import logbook.webClient.WebClientConfig;
 
 public class Consumer implements Runnable {
     
@@ -51,34 +54,33 @@ public class Consumer implements Runnable {
                             json = jsonreader.readObject();
                         }
                         if (json != null) {
-                            WebClient webClient = WebClient.create("http://localhost:8890");
-                            JsonValue methodJsonVal = json.get("method");
-                            JsonValue uriJsonVal = json.get("uri");
-                            
-                            String method = "";
-                            if (methodJsonVal instanceof JsonString jsonString) {
-                                method = jsonString.getString();
-                            }
-                            String uri = "";
-                            if (uriJsonVal instanceof JsonString jsonString) {
-                                uri = jsonString.getString();
-                            }
+                            String method = getJsonToString(json, "method");
+                            String uri = getJsonToString(json, "uri");
                             
                             if ("POST".equals(method)) {
-                                JsonValue postDataJsonVal = json.get("postData");
-                                String postData = "";
-                                if (postDataJsonVal instanceof JsonString jsonString) {
-                                    postData = jsonString.getString();
-                                }
+                                String postData = getJsonToString(json, "postData");
+                                String responseBody = getJsonToString(json, "responseBody");
                                 
+                                String hashKey = queueName + DateTimeUtils.getCurrentTimestamp();
+                                CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+                                cacheHolder.put(hashKey, responseBody);
+                                
+                                WebClient webClient = WebClientConfig.createCustomWebClient();
                                 String response = webClient.post()
                                         .uri(uri)
                                         .header("Content-Type", "application/x-www-form-urlencoded")
+                                        .header("User-Agent", hashKey) //航海日誌改のProxy内で上書きされるがデバック用
+                                        .header("Origin", "http://localhost:8890")
+                                        .header("Host", "localhost:8890")
+                                        .header("Proxy-Connection", "keep-alive")
+                                        .header("x-koukainissikai", hashKey)
                                         .bodyValue(postData)
                                         .retrieve()
                                         .bodyToMono(String.class)
                                         .block();
-                                logger.debug("response : " + response);
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("response : " + response);
+                                }
                             }
                         } else {
                             logger.error("JsonのParseが出来ませんでした : " + data);
@@ -113,5 +115,13 @@ public class Consumer implements Runnable {
     public void stop() {
         logger.info(queueName + " Consumerのshutdownを開始");
         this.isShutDown = true;
+    }
+    
+    private String getJsonToString(JsonObject json, String key) {
+        JsonValue jsonVal = json.get(key);
+        if (jsonVal instanceof JsonString jsonString) {
+            return jsonString.getString();
+        }
+        return jsonVal.toString();
     }
 }
