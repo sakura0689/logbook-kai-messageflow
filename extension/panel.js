@@ -97,7 +97,7 @@ const MAX_LOGS = 20;
 // 現在のリクエストログのリスト
 const logs = [];
 
-const createSendData = (method, encoding, fullUrl, uri, queryString, queryParams, postData, responseBody) => {
+const createSendData = (method, encoding, uri, queryString, queryParams, postData, responseBody) => {
     // JSON文字列に変換する前にエスケープ処理
     const escapedQueryParams = JSON.stringify(queryParams);
     const escapedPostData = typeof postData === 'string' ? JSON.stringify(postData) : JSON.stringify(postData || null);
@@ -107,7 +107,7 @@ const createSendData = (method, encoding, fullUrl, uri, queryString, queryParams
         if (encoding === 'base64') {
             escapedResponseBody = responseBody; // base64の場合はそのまま
         } else {
-            escapedResponseBody = JSON.stringify(responseBody); //svdata=JSONの形なのでエスケープ実施
+            escapedResponseBody = responseBody; //svdata=JSON
         }
     } else if (responseBody) {
         escapedResponseBody = JSON.stringify(responseBody); //svdata=JSONの形なのでエスケープ実施(多分到達しないはず)
@@ -116,7 +116,6 @@ const createSendData = (method, encoding, fullUrl, uri, queryString, queryParams
     const sendData = {
         method: method,
         encoding: encoding,
-        fullUrl: fullUrl,
         uri: uri,
         queryString: queryString,
         queryParams: escapedQueryParams,
@@ -180,7 +179,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           if (apiSocket && apiSocket.getSocket() && apiSocket.getSocket().readyState === SockJS.OPEN) {
               webSocketStatus = "connect";
               const encodeToSend = encoding || ""; 
-              sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
+              sendData = createSendData(method, encodeToSend, uri, queryString, queryParams, postData, content);
               try {
                   apiSocket.getSocket().send(sendData);
               } catch (error) {
@@ -192,7 +191,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           if (encoding === "base64") {
               if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
-                  sendData = createSendData(method, encoding, fullUrl, uri, queryString, queryParams, postData, content);
+                  sendData = createSendData(method, encoding, uri, queryString, queryParams, postData, content);
                   try {
                       imageSocket.getSocket().send(sendData);
                   } catch (error) {
@@ -203,7 +202,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
               if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
                   const encodeToSend = encoding || ""; 
-                  sendData = createSendData(method, encodeToSend, fullUrl, uri, queryString, queryParams, postData, content);
+                  sendData = createSendData(method, encodeToSend, uri, queryString, queryParams, postData, content);
                   try {
                       imageJsonSocket.getSocket().send(sendData);
                   } catch (error) {
