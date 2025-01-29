@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 
 import logbook.config.LogBookKaiMessageFlowConfig;
+import logbook.queue.ApiConsumer;
 import logbook.queue.BaseConsumer;
 import logbook.queue.QueueHolder;
 
@@ -46,7 +47,7 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
             this.imageJsonExecutorService = Executors.newSingleThreadExecutor();
 
             // Consumer をスレッドプールで実行
-            this.apiExecutorService.execute(new BaseConsumer(queue.getAPIQueue(), "APIQueue"));
+            this.apiExecutorService.execute(new ApiConsumer(queue.getAPIQueue(), "APIQueue"));
             this.imageExecutorService.execute(new BaseConsumer(queue.getImageQueue(), "ImageQueue"));
             this.imageJsonExecutorService.execute(new BaseConsumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
 
