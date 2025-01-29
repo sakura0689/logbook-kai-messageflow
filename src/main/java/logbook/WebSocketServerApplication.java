@@ -15,7 +15,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 
-import logbook.queue.Consumer;
+import logbook.config.LogBookKaiMessageFlowConfig;
+import logbook.queue.BaseConsumer;
 import logbook.queue.QueueHolder;
 
 @SpringBootApplication
@@ -29,6 +30,8 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
     
     public static void main(String[] args) {
         SpringApplication.run(WebSocketServerApplication.class, args);
+        
+        LogBookKaiMessageFlowConfig config = LogBookKaiMessageFlowConfig.getInstance();
     }
 
     @Bean
@@ -43,9 +46,9 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
             this.imageJsonExecutorService = Executors.newSingleThreadExecutor();
 
             // Consumer をスレッドプールで実行
-            this.apiExecutorService.execute(new Consumer(queue.getAPIQueue(), "APIQueue"));
-            this.imageExecutorService.execute(new Consumer(queue.getImageQueue(), "ImageQueue"));
-            this.imageJsonExecutorService.execute(new Consumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
+            this.apiExecutorService.execute(new BaseConsumer(queue.getAPIQueue(), "APIQueue"));
+            this.imageExecutorService.execute(new BaseConsumer(queue.getImageQueue(), "ImageQueue"));
+            this.imageJsonExecutorService.execute(new BaseConsumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
 
             //シャットダウン用Latch初期化
             this.shutdownLatch = new CountDownLatch(1);

@@ -13,12 +13,13 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonString;
 import jakarta.json.JsonValue;
 import logbook.cache.CacheHolder;
+import logbook.config.LogBookKaiMessageFlowConfig;
 import logbook.utils.DateTimeUtils;
 import logbook.webClient.WebClientConfig;
 
-public class Consumer implements Runnable {
+public class BaseConsumer implements Runnable {
     
-    private static final Logger logger = LoggerFactory.getLogger(Consumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseConsumer.class);
     
     private final String queueName;
     
@@ -27,7 +28,7 @@ public class Consumer implements Runnable {
     private volatile boolean running = true;
     private volatile boolean isShutDown = false;
 
-    public Consumer(Queue<String> queue, String queueName) {
+    public BaseConsumer(Queue<String> queue, String queueName) {
         this.queue = queue;
         this.queueName = queueName;
     }
@@ -48,46 +49,22 @@ public class Consumer implements Runnable {
                 String data = queue.poll();
                 if (data != null) {
                     try {
+                        if (logger.isDebugEnabled()) {
+                            
+                        }
                         StringReader reader = new StringReader(data);
                         JsonObject json;
                         try (JsonReader jsonreader = Json.createReader(reader)) {
                             json = jsonreader.readObject();
                         }
                         if (json != null) {
-                            String method = getJsonToString(json, "method");
-                            String uri = getJsonToString(json, "uri");
-                            
-                            if ("POST".equals(method)) {
-                                String postData = getJsonToString(json, "postData");
-                                String responseBody = getJsonToString(json, "responseBody");
-                                
-                                String hashKey = queueName + DateTimeUtils.getCurrentTimestamp();
-                                CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
-                                cacheHolder.put(hashKey, responseBody);
-                                
-                                WebClient webClient = WebClientConfig.createCustomWebClient();
-                                String response = webClient.post()
-                                        .uri(uri)
-                                        .header("Content-Type", "application/x-www-form-urlencoded")
-                                        .header("User-Agent", hashKey) //航海日誌改のProxy内で上書きされるがデバック用
-                                        .header("Origin", "http://localhost:8890")
-                                        .header("Host", "localhost:8890")
-                                        .header("Proxy-Connection", "keep-alive")
-                                        .header("x-koukainissikai", hashKey)
-                                        .bodyValue(postData)
-                                        .retrieve()
-                                        .bodyToMono(String.class)
-                                        .block();
-                                if (logger.isDebugEnabled()) {
-                                    logger.debug("response : " + response);
-                                }
-                            }
+                            sendData(json);
                         } else {
                             logger.error("JsonのParseが出来ませんでした : " + data);
                         }
                         
                     } catch (Exception e) {
-                        logger.debug(queueName + " : " + data, e);
+                        logger.error(queueName + " : " + data, e);
                     }
                 } else {
                     if (isShutDown) {
@@ -112,12 +89,43 @@ public class Consumer implements Runnable {
         }
     }
     
+    protected void sendData(JsonObject json) {
+        String method = getJsonToString(json, "method");
+        String uri = getJsonToString(json, "uri");
+        
+        if ("POST".equals(method)) {
+            String postData = getJsonToString(json, "postData");
+            String responseBody = getJsonToString(json, "responseBody");
+            
+            String hashKey = queueName + DateTimeUtils.getCurrentTimestamp();
+            CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+            cacheHolder.put(hashKey, responseBody);
+            
+            WebClient webClient = WebClientConfig.createCustomWebClient();
+            String response = webClient.post()
+                    .uri(uri)
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .header("User-Agent", hashKey) //航海日誌改のProxy内で上書きされるがデバック用
+                    .header("Origin", LogBookKaiMessageFlowConfig.getInstance().getKoukainissikaiMessageFlowOrigin())
+                    .header("Host", LogBookKaiMessageFlowConfig.getInstance().getKoukainissikaiMessageFlowHost())
+                    .header("Proxy-Connection", "keep-alive")
+                    .header("x-koukainissikai", hashKey)
+                    .bodyValue(postData)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            if (logger.isDebugEnabled()) {
+                logger.debug("response : " + response);
+            }
+        }
+    }
+    
     public void stop() {
         logger.info(queueName + " Consumerのshutdownを開始");
         this.isShutDown = true;
     }
     
-    private String getJsonToString(JsonObject json, String key) {
+    protected String getJsonToString(JsonObject json, String key) {
         JsonValue jsonVal = json.get(key);
         if (jsonVal instanceof JsonString jsonString) {
             return jsonString.getString();

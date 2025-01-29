@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import logbook.cache.CacheHolder;
 
+/**
+ * 航海日誌改からのProxy通信を受ける、サーバーとして稼働する機能です
+ */
 @RestController
 public class ServerController {
     
