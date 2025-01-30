@@ -67,9 +67,14 @@
 </head>
 <body>
     <h2>通信ログ</h2>
-    <label>
-        <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
-    </label>
+    <div style="display: flex; gap: 10px;">
+        <label>
+            <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
+        </label>
+        <label>
+            <input type="checkbox" id="send-cache-checkbox"> キャッシュも送信
+        </label>
+    </div>
     <div id="websocket-status">
         <div id="api-status">
             <span class="status-indicator disconnect"></span>
