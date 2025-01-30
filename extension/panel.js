@@ -202,7 +202,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
                       console.log(`imageSocket error send data : ${sendData}` , error);            
                   }
               }
-          } else {
+          } else if (uri.endsWith(".json")) {
               if (imageJsonSocket && imageJsonSocket.getSocket() && imageJsonSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
                   const encodeToSend = encoding || ""; 
