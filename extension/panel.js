@@ -98,9 +98,6 @@ const MAX_LOGS = 20;
 const logs = [];
 
 const createSendData = (method, encoding, uri, queryString, queryParams, postData, responseBody) => {
-    // JSON文字列に変換する前にエスケープ処理
-    const escapedQueryParams = JSON.stringify(queryParams);
-    const escapedPostData = typeof postData === 'string' ? JSON.stringify(postData) : JSON.stringify(postData || null);
 
     let escapedResponseBody = "";
     if (typeof responseBody === 'string') {
@@ -118,8 +115,8 @@ const createSendData = (method, encoding, uri, queryString, queryParams, postDat
         encoding: encoding,
         uri: uri,
         queryString: queryString,
-        queryParams: escapedQueryParams,
-        postData: escapedPostData,
+        queryParams: queryParams,
+        postData: postData,
         responseBody: escapedResponseBody
     };
 
