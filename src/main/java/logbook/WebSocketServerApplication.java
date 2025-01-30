@@ -12,10 +12,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 
+import javafx.application.Platform;
+import javafx.stage.Stage;
 import logbook.config.LogBookKaiMessageFlowConfig;
+import logbook.javafx.LogBookMessageFlowView;
 import logbook.queue.ApiConsumer;
 import logbook.queue.ImageConsumer;
 import logbook.queue.ImageJsonConsumer;
@@ -24,6 +28,8 @@ import logbook.queue.QueueHolder;
 @SpringBootApplication
 public class WebSocketServerApplication implements ApplicationListener<ContextClosedEvent> {
 
+    private static ConfigurableApplicationContext context;
+    
     private static final Logger logger = LoggerFactory.getLogger(WebSocketServerApplication.class);
     private CountDownLatch shutdownLatch;
     private ExecutorService apiExecutorService;
@@ -31,7 +37,24 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
     private ExecutorService imageJsonExecutorService;
     
     public static void main(String[] args) {
-        SpringApplication.run(WebSocketServerApplication.class, args);
+        // JavaFXを起動
+        Platform.startup(() -> {
+            Stage stage = new Stage();
+            LogBookMessageFlowView application = new LogBookMessageFlowView();
+            application.start(stage);
+
+            // JavaFXウィンドウが閉じられた際の処理
+            stage.setOnCloseRequest(event -> {
+                // Spring Bootアプリケーションをシャットダウン
+                if (context != null) {
+                    SpringApplication.exit(context);
+                }
+                Platform.exit(); // JavaFXプラットフォームを終了
+                System.exit(0); // アプリケーション全体を終了
+            });
+        });
+        
+        context = SpringApplication.run(WebSocketServerApplication.class, args);
         
         LogBookKaiMessageFlowConfig config = LogBookKaiMessageFlowConfig.getInstance();
     }
