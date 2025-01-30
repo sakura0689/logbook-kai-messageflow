@@ -72,13 +72,21 @@ public class ServerController {
 
             // HTTP ヘッダーを設定
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
             headers.setContentLength(imageBytes.length);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .headers(headers)
                     .body(imageBytes);
+        } else if ("json".equals(sendType)) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentLength(responseBody.length());
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .headers(headers)
+                    .body(responseBody);
+            
         }
         return ResponseEntity.ok().body("");
     }

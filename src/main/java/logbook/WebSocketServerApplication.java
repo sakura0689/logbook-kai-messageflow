@@ -17,8 +17,8 @@ import org.springframework.context.event.ContextClosedEvent;
 
 import logbook.config.LogBookKaiMessageFlowConfig;
 import logbook.queue.ApiConsumer;
-import logbook.queue.BaseConsumer;
 import logbook.queue.ImageConsumer;
+import logbook.queue.ImageJsonConsumer;
 import logbook.queue.QueueHolder;
 
 @SpringBootApplication
@@ -50,7 +50,7 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
             // Consumer をスレッドプールで実行
             this.apiExecutorService.execute(new ApiConsumer(queue.getAPIQueue(), "APIQueue"));
             this.imageExecutorService.execute(new ImageConsumer(queue.getImageQueue(), "ImageQueue"));
-            this.imageJsonExecutorService.execute(new BaseConsumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
+            this.imageJsonExecutorService.execute(new ImageJsonConsumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
 
             //シャットダウン用Latch初期化
             this.shutdownLatch = new CountDownLatch(1);
