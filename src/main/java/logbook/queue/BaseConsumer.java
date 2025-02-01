@@ -23,9 +23,9 @@ public class BaseConsumer implements Runnable {
     private volatile boolean running = true;
     private volatile boolean isShutDown = false;
 
-    public BaseConsumer(Queue<String> queue, String queueName) {
+    public BaseConsumer(Queue<String> queue, QueueName queueName) {
         this.queue = queue;
-        this.queueName = queueName;
+        this.queueName = queueName.getQueueName();
     }
     
     /**
@@ -43,9 +43,10 @@ public class BaseConsumer implements Runnable {
                 }
                 String data = queue.poll();
                 if (data != null) {
+                    QueueStatus.incrementQueueCount(queueName);
                     try {
                         if (logger.isDebugEnabled()) {
-                            
+                            logger.debug("Queueからの取得データ : " + data);
                         }
                         StringReader reader = new StringReader(data);
                         JsonObject json;
@@ -62,6 +63,7 @@ public class BaseConsumer implements Runnable {
                         logger.error(queueName + " : " + data, e);
                     }
                 } else {
+                    QueueStatus.ensureCurrentMinuteExists(queueName);
                     if (isShutDown) {
                         //shutdownを受け取り、Queueが空なら処理終了
                         logger.info(queueName + " ConsumerのQueueが空を確認 終了します");

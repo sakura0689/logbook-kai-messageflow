@@ -16,7 +16,7 @@ public class ApiConsumer extends BaseConsumer {
     
     private static final Logger logger = LoggerFactory.getLogger(ApiConsumer.class);
     
-    public ApiConsumer(Queue<String> queue, String queueName) {
+    public ApiConsumer(Queue<String> queue, QueueName queueName) {
         super(queue, queueName);
     }
 

@@ -27,6 +27,13 @@ public class LogBookKaiMessageFlowConfig {
     }
 
     /**
+     * 航海日誌改MessageFlowのポート番号を返却します
+     */
+    public int getKoukainissikaiMessageFlowPort() {
+        return this.koukainissikaiMessageFlowPort;
+    }
+
+    /**
      * 航海日誌改のポート番号を返却します
      */
     public int getKoukainissikaiPort() {

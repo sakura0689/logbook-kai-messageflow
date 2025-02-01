@@ -24,6 +24,7 @@ import logbook.queue.ApiConsumer;
 import logbook.queue.ImageConsumer;
 import logbook.queue.ImageJsonConsumer;
 import logbook.queue.QueueHolder;
+import logbook.queue.QueueName;
 
 @SpringBootApplication
 public class WebSocketServerApplication implements ApplicationListener<ContextClosedEvent> {
@@ -86,9 +87,9 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
             this.imageJsonExecutorService = Executors.newSingleThreadExecutor();
 
             // Consumer をスレッドプールで実行
-            this.apiExecutorService.execute(new ApiConsumer(queue.getAPIQueue(), "APIQueue"));
-            this.imageExecutorService.execute(new ImageConsumer(queue.getImageQueue(), "ImageQueue"));
-            this.imageJsonExecutorService.execute(new ImageJsonConsumer(queue.getImageJsonQueue(), "ImageJsonQueue"));
+            this.apiExecutorService.execute(new ApiConsumer(queue.getAPIQueue(), QueueName.API));
+            this.imageExecutorService.execute(new ImageConsumer(queue.getImageQueue(), QueueName.IMAGE));
+            this.imageJsonExecutorService.execute(new ImageJsonConsumer(queue.getImageJsonQueue(), QueueName.IMAGEJSON));
 
             //シャットダウン用Latch初期化
             this.shutdownLatch = new CountDownLatch(1);
@@ -102,17 +103,17 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
         queue.setShuttingDown(true);
 
         try {
-            safelyShutdown(this.apiExecutorService, queue.getAPIQueue(), "APIQueue");
+            safelyShutdown(this.apiExecutorService, queue.getAPIQueue(), QueueName.API);
         } catch (Exception e) {
             logger.error("APIQueue シャットダウン処理中にエラー発生", e);
         }
         try {
-            safelyShutdown(this.imageExecutorService, queue.getImageQueue(), "ImageQueue");
+            safelyShutdown(this.imageExecutorService, queue.getImageQueue(), QueueName.IMAGE);
         } catch (Exception e) {
             logger.error("ImageQueue シャットダウン処理中にエラー発生", e);
         }
         try {
-            safelyShutdown(this.imageJsonExecutorService, queue.getImageJsonQueue(), "ImageJsonQueue");
+            safelyShutdown(this.imageJsonExecutorService, queue.getImageJsonQueue(), QueueName.IMAGEJSON);
         } catch (Exception e) {
             logger.error("ImageJsonQueue シャットダウン処理中にエラー発生", e);
         }
@@ -128,7 +129,7 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
      * @param queue
      * @param queueName
      */
-    private void safelyShutdown(ExecutorService executorService, Queue<String> queue, String queueName) {
+    private void safelyShutdown(ExecutorService executorService, Queue<String> queue, QueueName queueName) {
         int attempts = 0;
         boolean isQueueEmpty = false;
 

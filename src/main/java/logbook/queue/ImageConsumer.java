@@ -17,7 +17,7 @@ public class ImageConsumer extends BaseConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(ImageConsumer.class);
 
-    public ImageConsumer(Queue<String> queue, String queueName) {
+    public ImageConsumer(Queue<String> queue, QueueName queueName) {
         super(queue, queueName);
     }
 

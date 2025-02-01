@@ -55,6 +55,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
     
     private static class ApiWebSocketHandler extends MyWebSocketHandler {
+        public ApiWebSocketHandler() {
+            super(WebSocketStatus.API);
+        }
+        
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -76,6 +80,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     private static class ImageWebSocketHandler extends MyWebSocketHandler {
+        public ImageWebSocketHandler() {
+            super(WebSocketStatus.IMAGE);
+        }
+        
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -97,6 +105,10 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     private static class ImageJsonWebSocketHandler extends MyWebSocketHandler {
+        public ImageJsonWebSocketHandler() {
+            super(WebSocketStatus.IMAGE_JSON);
+        }
+        
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -119,6 +131,12 @@ public class WebSocketConfig implements WebSocketConfigurer {
     
     private static class MyWebSocketHandler extends TextWebSocketHandler {
 
+        private final WebSocketStatus status;
+
+        public MyWebSocketHandler(WebSocketStatus status) {
+            this.status = status;
+        }
+        
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -129,12 +147,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
         @Override
         public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+            status.increment();
             logger.info("Connection established: " + session.getId());
         }
 
         @Override
         public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status)
                 throws Exception {
+            this.status.decrement();
             logger.info("Connection closed: " + session.getId() + ", Status: " + status);
         }
 
