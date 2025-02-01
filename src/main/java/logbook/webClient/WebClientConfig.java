@@ -1,5 +1,7 @@
 package logbook.webClient;
 
+import java.time.Duration;
+
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -30,6 +32,8 @@ public class WebClientConfig {
                 .build();
 
         HttpClient httpClient = HttpClient.create()
+                .keepAlive(false)
+                .responseTimeout(Duration.ofSeconds(10))
                 .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP)
                         .host(PROXY_HOST)
                         .port(PROXY_PORT));
