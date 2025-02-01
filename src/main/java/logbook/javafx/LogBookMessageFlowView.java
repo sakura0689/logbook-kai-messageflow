@@ -16,6 +16,7 @@ import logbook.queue.QueueName;
 import logbook.queue.QueueStatus;
 
 public class LogBookMessageFlowView extends Application {
+    
     private Label portLabel;
     private Label webSocketStatusLabel;
     private Label queueStatusLabel;
@@ -31,9 +32,9 @@ public class LogBookMessageFlowView extends Application {
         queueStatusLabel = new Label();
         updateQueueStatus(); // 初回表示
         
-        // 10秒ごとにWebSocketの接続数,直近5分のQueue実行数を更新
+        // 5秒ごとにWebSocketの接続数,直近5分のQueue実行数を更新
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(10), 
+                new KeyFrame(Duration.seconds(5), 
                         event -> {
                             updateWebSocketStatus();
                             updateQueueStatus();
