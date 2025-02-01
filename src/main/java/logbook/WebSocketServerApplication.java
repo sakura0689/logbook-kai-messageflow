@@ -36,7 +36,24 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
     private ExecutorService imageExecutorService;
     private ExecutorService imageJsonExecutorService;
     
+    /**
+     * -Dport MessageFlowのport番号 : 未指定時 8890 
+     * -Dkaiport 航海日誌改のport番号 : 未指定時 8888
+     */
     public static void main(String[] args) {
+        // Javaの引数からポート番号を取得
+        LogBookKaiMessageFlowConfig config = LogBookKaiMessageFlowConfig.getInstance();
+        String port = System.getProperty("port");
+        if (port != null && port.matches("\\d+")) {
+            System.setProperty("server.port", port);
+            config.setKoukainissikaiMessageFlowPort(Integer.parseInt(port));
+        }
+        String logBookPort = System.getProperty("kaiport");
+        if (logBookPort != null && logBookPort.matches("\\d+")) {
+            config.setKoukainissikaiPort(Integer.parseInt(logBookPort));
+        }
+
+        
         // JavaFXを起動
         Platform.startup(() -> {
             Stage stage = new Stage();
@@ -55,8 +72,6 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
         });
         
         context = SpringApplication.run(WebSocketServerApplication.class, args);
-        
-        LogBookKaiMessageFlowConfig config = LogBookKaiMessageFlowConfig.getInstance();
     }
 
     @Bean
