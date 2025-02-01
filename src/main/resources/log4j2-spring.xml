@@ -10,7 +10,12 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="DEBUG">
+        <Logger name="logbook.queue.BaseConsumer" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="ROLLING"/>
+        </Logger>
+    
+        <Root level="INFO">
             <AppenderRef ref="Console" />
             <AppenderRef ref="ROLLING" />
         </Root>
