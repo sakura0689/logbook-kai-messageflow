@@ -1,0 +1,32 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>release</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <includes>
+                <include>${artifactId}.jar</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>extension</directory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+            <outputDirectory>/extension</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>dist-includes</directory>
+            <includes>
+                <include>launch-messageflow.bat</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
