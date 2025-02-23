@@ -36,19 +36,19 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOriginPatterns("*")
                                                                                                     .withSockJS()
-                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setHeartbeatTime(20000) //20s
                                                                                                         .setWebSocketEnabled(true)
                                                                                                         .setStreamBytesLimit(32 * 1024 * 1024); //32M
         
         registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOriginPatterns("*")
                                                                                                     .withSockJS()
-                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setHeartbeatTime(20000) //20s
                                                                                                         .setWebSocketEnabled(true)
                                                                                                         .setStreamBytesLimit(32 * 1024 * 1024); //32M
                                                                                                         
         registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOriginPatterns("*")
                                                                                                     .withSockJS()
-                                                                                                        .setHeartbeatTime(30000) //30s
+                                                                                                        .setHeartbeatTime(20000) //20s
                                                                                                         .setWebSocketEnabled(true)
                                                                                                         .setStreamBytesLimit(32 * 1024 * 1024); //32M
                                                                                                         
@@ -62,7 +62,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
-            logger.info("api received message size : " + payload.length());
+            if (logger.isDebugEnabled()) {
+                logger.debug("api received message size : " + payload.length());
+            }
 
             // シャットダウン中ならスキップ
             if (QueueHolder.getInstance().isShuttingDown()) {
@@ -87,7 +89,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
-            logger.info("image received message size : " + payload.length());
+            if (logger.isDebugEnabled()) {
+                logger.debug("image received message size : " + payload.length());
+            }
             
             // シャットダウン中ならスキップ
             if (QueueHolder.getInstance().isShuttingDown()) {
@@ -112,7 +116,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
-            logger.info("received message size : " + payload.length());
+            if (logger.isDebugEnabled()) {
+                logger.debug("received message size : " + payload.length());
+            }
 
             // シャットダウン中ならスキップ
             if (QueueHolder.getInstance().isShuttingDown()) {
@@ -140,7 +146,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
-            logger.info("received message size : " + payload.length());
+            if (logger.isDebugEnabled()) {
+                logger.debug("received message size : " + payload.length());
+            }
             
             session.sendMessage(new TextMessage("ok"));
         }

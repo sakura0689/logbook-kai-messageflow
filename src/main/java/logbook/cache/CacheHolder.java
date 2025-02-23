@@ -3,19 +3,26 @@ package logbook.cache;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import logbook.queue.QueueName;
+
 public class CacheHolder<K, V> {
 
-    private static final int MAX_ENTRIES = 10;
+    private static final int MAX_ENTRIES = 30;
     private final ConcurrentHashMap<K, V> cache = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<K> accessQueue = new ConcurrentLinkedQueue<>();
 
-    private static final CacheHolder<?, ?> INSTANCE = new CacheHolder<>();
+    private static final CacheHolder<?, ?> apiInstance = new CacheHolder<>();
+    private static final CacheHolder<?, ?> imageInstance = new CacheHolder<>();
 
     private CacheHolder() {}
 
     @SuppressWarnings("unchecked")
-    public static <K, V> CacheHolder<K, V> getInstance() {
-        return (CacheHolder<K, V>) INSTANCE;
+    public static <K, V> CacheHolder<K, V> getInstance(QueueName queueName) {
+        if (QueueName.API == queueName) {
+            return (CacheHolder<K, V>) apiInstance;
+        } else {
+            return (CacheHolder<K, V>) imageInstance;
+        }
     }
 
     public synchronized void put(K key, V value) {

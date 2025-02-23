@@ -138,7 +138,6 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
     uri.includes("/kcs2/img/sally/")
   ) {
     const method = request.request.method;
-    const endpoint = `${url.origin}${url.pathname}`;
     const queryString = url.search;
 
     const queryParams = {};
@@ -228,7 +227,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
 
       // 折り畳み時の背景色（キャッシュの場合は濃いグレー）
       const headerColor = isCacheLike ? "rgba(50, 50, 50, 0.8)" : "#eee";
-      const endpointDisplay = isCacheLike ? `${endpoint} (Cache)` : `${endpoint} ${request.time.toFixed(3)}(ms)`;
+      const uriDisplay = isCacheLike ? `${uri} (Cache)` : `${uri} ${request.time.toFixed(3)}(ms)`;
       const webSocketStatusDisplay = isCacheLike ? `` : `<span style='${webSocketStatusStyle}'>${webSocketStatus}</span>`;
 
       const timings = request.timings
@@ -242,13 +241,12 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
         
       const requestHtml = `
         <div class="request-header" style="cursor: pointer; background-color: ${headerColor};">
-          <strong>Endpoint:</strong> ${endpointDisplay} ${webSocketStatusDisplay}
+          <strong>URI:</strong> ${uriDisplay} ${webSocketStatusDisplay}
         </div>
         <div class="request-body" style="display: none;">
           <h4>Request</h4>
           <p><strong>Method:</strong> ${method}</p>
           <p><strong>URL:</strong> ${fullUrl}</p>
-          <p><strong>Endpoint:</strong> ${endpoint}</p>
           <p><strong>URI:</strong> ${uri}</p>
           <p><strong>Query String:</strong> ${queryString}</p>
           <h4>Query Parameters:</h4>

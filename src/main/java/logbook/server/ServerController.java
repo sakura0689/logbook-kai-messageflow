@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import logbook.cache.CacheHolder;
+import logbook.queue.QueueName;
 
 /**
  * 航海日誌改からのProxy通信を受ける、サーバーとして稼働する機能です
@@ -41,7 +42,7 @@ public class ServerController {
                 logger.debug("  {}: {}", headerName, headerValue);
             }
         }
-        CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+        CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.API);
         String responseBody = cacheHolder.get(hashKey);
         if (responseBody == null) {
             logger.warn("Cache miss for key: " + hashKey);
@@ -71,7 +72,7 @@ public class ServerController {
                 logger.debug("  {}: {}", headerName, headerValue);
             }
         }
-        CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+        CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.IMAGE);
         String responseBody = cacheHolder.get(hashKey);
         if (responseBody == null) {
             logger.warn("Cache miss for key: " + hashKey);

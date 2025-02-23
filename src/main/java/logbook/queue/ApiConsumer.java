@@ -29,7 +29,7 @@ public class ApiConsumer extends BaseConsumer {
             String responseBody = getJsonToString(json, "responseBody");
             
             String hashKey = getQueueName() + DateTimeUtils.getCurrentTimestamp();
-            CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+            CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.API);
             cacheHolder.put(hashKey, responseBody);
             
             WebClient webClient = WebClientConfig.createCustomWebClient();

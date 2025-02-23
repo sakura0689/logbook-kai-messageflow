@@ -15,12 +15,11 @@ public class QueueStatus {
     private static final DateTimeFormatter FORMATTER_HHmm = DateTimeFormatter.ofPattern("HHmm");
     private static final DateTimeFormatter FORMATTER_HHmmssSSS = DateTimeFormatter.ofPattern("HHmmssSSS");
 
-    public static synchronized void incrementQueueCount(String queueName) {
+    public static synchronized void incrementQueueCount(QueueName queue) {
         LocalDateTime dateTime = LocalDateTime.now();
         String key = dateTime.format(FORMATTER_HHmm);
         String incrementTime = dateTime.format(FORMATTER_HHmmssSSS);
         
-        QueueName queue = QueueName.getQueue(queueName);
         if (QueueName.API.equals(queue)) {
             if (!apiQueueCounts.containsKey(key)) {
                 apiQueueCounts.put(key,new ArrayList<String>());
@@ -54,11 +53,10 @@ public class QueueStatus {
         }
     }
 
-    public static synchronized void ensureCurrentMinuteExists(String queueName) {
+    public static synchronized void ensureCurrentMinuteExists(QueueName queue) {
         LocalDateTime dateTime = LocalDateTime.now();
         String key = dateTime.format(FORMATTER_HHmm);
         
-        QueueName queue = QueueName.getQueue(queueName);
         if (QueueName.API.equals(queue)) {
             if (!apiQueueCounts.containsKey(key)) {
                 apiQueueCounts.put(key,new ArrayList<String>());

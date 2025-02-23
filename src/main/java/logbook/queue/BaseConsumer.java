@@ -16,7 +16,7 @@ public class BaseConsumer implements Runnable {
     
     private static final Logger logger = LoggerFactory.getLogger(BaseConsumer.class);
     
-    private final String queueName;
+    private final QueueName queueName;
     
     private final Queue<String> queue;
     
@@ -25,7 +25,7 @@ public class BaseConsumer implements Runnable {
 
     public BaseConsumer(Queue<String> queue, QueueName queueName) {
         this.queue = queue;
-        this.queueName = queueName.getQueueName();
+        this.queueName = queueName;
     }
     
     /**
@@ -38,7 +38,7 @@ public class BaseConsumer implements Runnable {
             int i = 0;
             while (running) {
                 if (QueueHolder.getInstance().isShuttingDown()) {
-                    logger.info(queueName + " ConsumerのShutdown処理を検知しました Shutdown処理を開始します");
+                    logger.info(queueName.getQueueName() + " ConsumerのShutdown処理を検知しました Shutdown処理を開始します");
                     isShutDown = true;
                 }
                 String data = queue.poll();
@@ -88,7 +88,7 @@ public class BaseConsumer implements Runnable {
     
     protected void sendData(JsonObject json) {}
     
-    protected String getQueueName() {
+    protected QueueName getQueueName() {
         return this.queueName;
     }
     
