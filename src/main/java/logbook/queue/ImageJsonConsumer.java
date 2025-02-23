@@ -28,7 +28,7 @@ public class ImageJsonConsumer extends BaseConsumer {
             String responseBody = getJsonToString(json, "responseBody");
 
             String hashKey = getQueueName() + DateTimeUtils.getCurrentTimestamp();
-            CacheHolder<String, String> cacheHolder = CacheHolder.getInstance();
+            CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.IMAGEJSON);
             cacheHolder.put(hashKey, responseBody);
 
             WebClient webClient = WebClientConfig.createCustomWebClient();
