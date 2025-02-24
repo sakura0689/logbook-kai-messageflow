@@ -13,6 +13,20 @@
             margin-bottom: 1px;
         }
 
+        #header-container {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1000;
+            padding-bottom: 1px;
+        }
+        
+        #request {
+            overflow-y: auto;
+            max-height: 500px;
+            padding: 2px;
+        }
+
         .request {
             margin-bottom: 0px;
             border: 1px solid #ccc;
@@ -71,27 +85,29 @@
     </style>
 </head>
 <body>
-    <h3>通信ログ</h3>
-    <div style="display: flex; gap: 2px;">
-        <label>
-            <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
-        </label>
-        <label>
-            <input type="checkbox" id="send-cache-checkbox"> キャッシュも送信
-        </label>
-    </div>
-    <div id="websocket-status">
-        <div id="api-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">api: disconnect</span>
+    <div id="header-container">
+        <h3>通信ログ</h3>
+        <div style="display: flex; gap: 2px;">
+            <label>
+                <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
+            </label>
+            <label>
+                <input type="checkbox" id="send-cache-checkbox"> キャッシュも送信
+            </label>
         </div>
-        <div id="image-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">image: disconnect</span>
-        </div>
-        <div id="imageJson-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">imageJson: disconnect</span>
+        <div id="websocket-status">
+            <div id="api-status">
+                <span class="status-indicator disconnect"></span>
+                <span class="status-text">api: disconnect</span>
+            </div>
+            <div id="image-status">
+                <span class="status-indicator disconnect"></span>
+                <span class="status-text">image: disconnect</span>
+            </div>
+            <div id="imageJson-status">
+                <span class="status-indicator disconnect"></span>
+                <span class="status-text">imageJson: disconnect</span>
+            </div>
         </div>
     </div>
     <div id="request"></div>
