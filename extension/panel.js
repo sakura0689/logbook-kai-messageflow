@@ -267,6 +267,8 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       requestElement.innerHTML = requestHtml;
       requestsContainer.appendChild(requestElement);
 
+      requestsContainer.scrollTop = requestsContainer.scrollHeight;
+
       // 折り畳みの設定
       const header = requestElement.querySelector(".request-header");
       const body = requestElement.querySelector(".request-body");

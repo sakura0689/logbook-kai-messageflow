@@ -51,9 +51,13 @@ public class ServerController {
                     .body("No data found : " + hashKey);   
         }
         
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(responseBody.length());
+        
         return ResponseEntity.ok()
                    .header(HttpHeaders.CONNECTION, "close")
                    .contentType(MediaType.TEXT_PLAIN)
+                   .headers(headers)
                    .body(responseBody);
     }
     

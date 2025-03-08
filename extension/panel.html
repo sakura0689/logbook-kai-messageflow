@@ -5,7 +5,40 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 10px;
+            margin: 2px;
+            overflow: hidden;
+        }
+
+        h3 {
+            margin-top: 1px;
+            margin-bottom: 1px;
+        }
+
+        #header-container {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1000;
+            padding-bottom: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        #header-left {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header-right {
+           width: 40%;
+        }
+        
+        #request {
+            overflow-y: auto;
+            max-height: calc(100vh - 50px);
+            padding: 2px;
         }
 
         .request {
@@ -16,7 +49,7 @@
         }
 
         .request-header {
-            padding: 8px;
+            padding: 2px;
             border-bottom: 1px solid #ccc;
         }
 
@@ -25,7 +58,7 @@
         }
 
         .request-body {
-            padding: 10px;
+            padding: 2px;
             display: none;
         }
 
@@ -49,7 +82,8 @@
         }
         
         #websocket-status {
-            margin-top: 10px;
+            margin-top: 2px;
+            display: inline-block;
         }
 
         .status-indicator {
@@ -66,27 +100,33 @@
     </style>
 </head>
 <body>
-    <h2>通信ログ</h2>
-    <div style="display: flex; gap: 10px;">
-        <label>
-            <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
-        </label>
-        <label>
-            <input type="checkbox" id="send-cache-checkbox"> キャッシュも送信
-        </label>
-    </div>
-    <div id="websocket-status">
-        <div id="api-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">api: disconnect</span>
+    <div id="header-container">
+        <div id="header-left">
+            <h3>通信ログ</h3>
+            <div style="display: flex; gap: 2px;">
+                <label>
+                    <input type="checkbox" id="show-cache-checkbox"> キャッシュも表示
+                </label>
+                <label>
+                    <input type="checkbox" id="send-cache-checkbox"> キャッシュも送信
+                </label>
+            </div>
         </div>
-        <div id="image-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">image: disconnect</span>
-        </div>
-        <div id="imageJson-status">
-            <span class="status-indicator disconnect"></span>
-            <span class="status-text">imageJson: disconnect</span>
+        <div id="header-right">
+            <div id="websocket-status">
+                <div id="api-status">
+                    <span class="status-indicator disconnect"></span>
+                    <span class="status-text">api: disconnect</span>
+                </div>
+                <div id="image-status">
+                    <span class="status-indicator disconnect"></span>
+                    <span class="status-text">image: disconnect</span>
+                </div>
+                <div id="imageJson-status">
+                    <span class="status-indicator disconnect"></span>
+                    <span class="status-text">imageJson: disconnect</span>
+                </div>
+            </div>
         </div>
     </div>
     <div id="request"></div>
