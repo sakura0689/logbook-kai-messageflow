@@ -133,6 +133,8 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
   if (
     uri.includes("/kcsapi/") ||
     uri.includes("/kcs2/resources/ship/") ||
+    uri.includes("/kcs2/resources/map/") ||
+    uri.includes("/kcs2/resources/gauge/") ||
     uri.includes("/kcs2/img/common/") ||
     uri.includes("/kcs2/img/duty/") ||
     uri.includes("/kcs2/img/sally/")
