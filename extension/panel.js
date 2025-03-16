@@ -254,7 +254,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           <h4>Query Parameters:</h4>
           <pre>${JSON.stringify(queryParams, null, 2)}</pre>
           ${requestBodyHtml}
-          <h4>Response Body:</h4>
+          <h4>Response Body: <button class="copy-button" data-content="${encodeURIComponent(content || '')}">Copy</button></h4>
           <pre style="background-color: ${responseColor};">${content || "(No Response Body)"}</pre>
           <p><strong>Content Size:</strong> ${contentSize || "(Unknown Size)"}</p>
           ${timings}
@@ -269,6 +269,18 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       requestElement.innerHTML = requestHtml;
       requestsContainer.appendChild(requestElement);
 
+      requestElement.querySelector(".copy-button").addEventListener("click", function () {
+        const textToCopy = decodeURIComponent(this.getAttribute("data-content"));
+        // テキストエリアを作成してコピー
+        //navigator.clipboard.writeText()がまれに動かないため、確実に稼働するこの方式にした
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      });      
+      
       requestsContainer.scrollTop = requestsContainer.scrollHeight;
 
       // 折り畳みの設定
