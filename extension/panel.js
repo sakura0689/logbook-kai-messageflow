@@ -217,6 +217,11 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           }
       }
 
+      const logDispCheckBox = document.getElementById("log-disp-checkbox");
+      if (!logDispCheckBox.checked) {
+        return;
+      }
+      
       // WebSocketステータス表示のスタイル
       const webSocketStatusStyle =
         webSocketStatus === "connect"
