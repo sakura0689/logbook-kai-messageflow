@@ -8,6 +8,7 @@ import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -33,6 +34,10 @@ public class LogBookMessageFlowView extends Application {
     
     @Override
     public void start(Stage primaryStage) {
+        
+        Image icon = new Image(getClass().getResourceAsStream("/icon64.png"));
+        primaryStage.getIcons().add(icon);
+        
         LogBookKaiMessageFlowConfig config = LogBookKaiMessageFlowConfig.getInstance();
         portLabel = new Label("起動Port:" + config.getKoukainissikaiMessageFlowPort() + " 航海日誌改Port" + config.getKoukainissikaiPort());
 

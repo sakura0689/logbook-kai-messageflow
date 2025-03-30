@@ -133,6 +133,8 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
   if (
     uri.includes("/kcsapi/") ||
     uri.includes("/kcs2/resources/ship/") ||
+    uri.includes("/kcs2/resources/map/") ||
+    uri.includes("/kcs2/resources/gauge/") ||
     uri.includes("/kcs2/img/common/") ||
     uri.includes("/kcs2/img/duty/") ||
     uri.includes("/kcs2/img/sally/")
@@ -165,17 +167,6 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
         `;
       }
       
-      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
-      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
-      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
-
-      const cacheDispCheckBox = document.getElementById("show-cache-checkbox");
-      const cacheSendCheckBox = document.getElementById("send-cache-checkbox");
-      if (!cacheDispCheckBox.checked && isCacheLike) {
-        return;
-      }
-      
-
       //送信処理
       let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
@@ -189,8 +180,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
                   console.log(`apiSocket error send data : ${sendData}` , error);            
               }
           }
-      } else if (!isCacheLike || cacheSendCheckBox.checked) {
-          //キャッシュの場合は処理しない
+      } else if (uri.includes("/kcs2/")) {
           if (encoding === "base64") {
               if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
@@ -213,6 +203,19 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
                   }
               }
           }
+      }
+
+      const logDispCheckBox = document.getElementById("log-disp-checkbox");
+      if (!logDispCheckBox.checked) {
+        return;
+      }
+      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
+      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
+      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
+
+      const cacheDispCheckBox = document.getElementById("show-cache-checkbox");
+      if (!cacheDispCheckBox.checked && isCacheLike) {
+        return;
       }
 
       // WebSocketステータス表示のスタイル
@@ -252,7 +255,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
           <h4>Query Parameters:</h4>
           <pre>${JSON.stringify(queryParams, null, 2)}</pre>
           ${requestBodyHtml}
-          <h4>Response Body:</h4>
+          <h4>Response Body: <button class="copy-button" data-content="${encodeURIComponent(content || '')}">Copy</button></h4>
           <pre style="background-color: ${responseColor};">${content || "(No Response Body)"}</pre>
           <p><strong>Content Size:</strong> ${contentSize || "(Unknown Size)"}</p>
           ${timings}
@@ -267,6 +270,18 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       requestElement.innerHTML = requestHtml;
       requestsContainer.appendChild(requestElement);
 
+      requestElement.querySelector(".copy-button").addEventListener("click", function () {
+        const textToCopy = decodeURIComponent(this.getAttribute("data-content"));
+        // テキストエリアを作成してコピー
+        //navigator.clipboard.writeText()がまれに動かないため、確実に稼働するこの方式にした
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      });      
+      
       requestsContainer.scrollTop = requestsContainer.scrollHeight;
 
       // 折り畳みの設定
