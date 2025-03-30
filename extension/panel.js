@@ -167,17 +167,6 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
         `;
       }
       
-      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
-      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
-      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
-
-      const cacheDispCheckBox = document.getElementById("show-cache-checkbox");
-      const cacheSendCheckBox = document.getElementById("send-cache-checkbox");
-      if (!cacheDispCheckBox.checked && isCacheLike) {
-        return;
-      }
-      
-
       //送信処理
       let webSocketStatus = "disconnect";
       if (uri.includes("/kcsapi/")) {
@@ -191,8 +180,7 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
                   console.log(`apiSocket error send data : ${sendData}` , error);            
               }
           }
-      } else if (!isCacheLike || cacheSendCheckBox.checked) {
-          //キャッシュの場合は処理しない
+      } else if (uri.includes("/kcs2/")) {
           if (encoding === "base64") {
               if (imageSocket && imageSocket.getSocket() && imageSocket.getSocket().readyState === SockJS.OPEN) {
                   webSocketStatus = "connect";
@@ -221,7 +209,15 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       if (!logDispCheckBox.checked) {
         return;
       }
-      
+      // URIが"/kcs2/"かつ、request.timings内の通信情報がない場合キャッシュからの取得とする
+      const isConnect = request.timings && request.timings.connect > 0 && request.timings.send > 0;
+      const isCacheLike = uri.includes("/kcs2/") && !isConnect;
+
+      const cacheDispCheckBox = document.getElementById("show-cache-checkbox");
+      if (!cacheDispCheckBox.checked && isCacheLike) {
+        return;
+      }
+
       // WebSocketステータス表示のスタイル
       const webSocketStatusStyle =
         webSocketStatus === "connect"
