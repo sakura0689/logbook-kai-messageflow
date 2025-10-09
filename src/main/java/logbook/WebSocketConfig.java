@@ -74,8 +74,12 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 return;
             }
             
-            //Queueに登録
-            QueueHolder.getInstance().getAPIQueue().offer(payload);
+            // Queueに登録
+            if (payload.indexOf("/kcsapi/api_port/port") > -1) {
+                QueueHolder.getInstance().getAPIPortQueue().offer(payload);
+            } else {
+                QueueHolder.getInstance().getAPIQueue().offer(payload);
+            }
             
             session.sendMessage(new TextMessage("ok"));
         }

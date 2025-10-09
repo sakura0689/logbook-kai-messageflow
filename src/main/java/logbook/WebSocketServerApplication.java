@@ -34,6 +34,7 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
     private static final Logger logger = LoggerFactory.getLogger(WebSocketServerApplication.class);
     private CountDownLatch shutdownLatch;
     private ExecutorService apiExecutorService;
+    private ExecutorService apiPortExecutorService;
     private ExecutorService imageExecutorService;
     private ExecutorService imageJsonExecutorService;
     
@@ -83,11 +84,13 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
 
             // 通信順序を維持するため、SingleThreadExecutor を使用
             this.apiExecutorService = Executors.newSingleThreadExecutor();
+            this.apiPortExecutorService = Executors.newSingleThreadExecutor();
             this.imageExecutorService = Executors.newSingleThreadExecutor();
             this.imageJsonExecutorService = Executors.newSingleThreadExecutor();
 
             // Consumer をスレッドプールで実行
             this.apiExecutorService.execute(new ApiConsumer(queue.getAPIQueue(), QueueName.API));
+            this.apiPortExecutorService.execute(new ApiConsumer(queue.getAPIPortQueue(), QueueName.API));
             this.imageExecutorService.execute(new ImageConsumer(queue.getImageQueue(), QueueName.IMAGE));
             this.imageJsonExecutorService.execute(new ImageJsonConsumer(queue.getImageJsonQueue(), QueueName.IMAGEJSON));
 
@@ -106,6 +109,11 @@ public class WebSocketServerApplication implements ApplicationListener<ContextCl
             safelyShutdown(this.apiExecutorService, queue.getAPIQueue(), QueueName.API);
         } catch (Exception e) {
             logger.error("APIQueue シャットダウン処理中にエラー発生", e);
+        }
+        try {
+            safelyShutdown(this.apiPortExecutorService, queue.getAPIPortQueue(), QueueName.API);
+        } catch (Exception e) {
+            logger.error("APIPortQueue シャットダウン処理中にエラー発生", e);
         }
         try {
             safelyShutdown(this.imageExecutorService, queue.getImageQueue(), QueueName.IMAGE);
