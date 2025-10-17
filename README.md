@@ -9,6 +9,12 @@
 
 「艦隊これくしょん ～艦これ～」のSSL対応にて、ChromeExtensionから航海日誌改へ通信データを中継する外部ツールです。
 
+### 動作イメージ
+
+![動作フロー](images/flow.png)
+
+![動作イメージ](images/preview.png)
+
 ### 動作環境
 ![Java](https://img.shields.io/badge/-Java-007396.svg?logo=java)
 ![Windows](https://img.shields.io/badge/-Windows-0078D6.svg?logo=windows)
