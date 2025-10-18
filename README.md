@@ -15,6 +15,10 @@
 
 ![動作イメージ](images/preview.png)
 
+### [ダウンロード](https://github.com/sakura0689/logbook-kai-messageflow/releases)
+
+### [環境設定(必須)](how-to-preference.md)
+
 ### 動作環境
 ![Java](https://img.shields.io/badge/-Java-007396.svg?logo=java)
 ![Windows](https://img.shields.io/badge/-Windows-0078D6.svg?logo=windows)
