@@ -8,7 +8,36 @@ server:
     connection-timeout: 60s
     threads:
       min-spare: 2
-      max: 10
-    max-connections: 10
-    accept-count: 10
-    
+      max: 20
+    max-connections: 20
+    accept-count: 20
+  ssl:
+    enabled: false
+
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration #webFlex系 自前で全部構築しているのでいらない
+      - org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.websocket.reactive.WebSocketReactiveAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration #DB系 使ってない。ORmapperもいらない
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jdbc.JdbcRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.aop.AopAutoConfiguration
+      - org.springframework.boot.autoconfigure.ssl.SslAutoConfiguration #SSL系 localhostで動くのでいらない
+      - org.springframework.boot.autoconfigure.ssl.SslPropertiesAutoConfiguration
+  jmx:
+    enabled: false
+  sql:
+    init:
+      mode: never
+  aop:
+    auto: false
+    proxy-target-class: false
+  data:
+    jpa:
+      repositories:
+        enabled: false
