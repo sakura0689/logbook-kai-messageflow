@@ -16,6 +16,9 @@ server:
 
 spring:
   autoconfigure:
+    # https://spring.pleiades.io/spring-boot/reference/features/developing-auto-configuration.html
+    # https://docs.spring.io/spring-boot/appendix/auto-configuration-classes/spring-boot-actuator-autoconfigure.html    
+    # https://github.com/spring-projects/spring-boot/blob/v3.5.6/spring-boot-project/spring-boot-autoconfigure/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
     exclude:
       - org.springframework.boot.autoconfigure.web.reactive.WebFluxAutoConfiguration #webFlex系 自前で全部構築しているのでいらない
       - org.springframework.boot.autoconfigure.web.reactive.function.client.WebClientAutoConfiguration
