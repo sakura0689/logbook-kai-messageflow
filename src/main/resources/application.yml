@@ -6,3 +6,8 @@ server:
     max-swallow-size: -1  # 無制限
     max-http-form-post-size: 32MB
     connection-timeout: 60s
+    threads:
+      min-spare: 2
+      max: 20
+    max-connections: 20
+    accept-count: 20
