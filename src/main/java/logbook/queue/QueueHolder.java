@@ -7,6 +7,7 @@ public class QueueHolder {
     private static QueueHolder instance;
 
     private final Queue<String> apiQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<String> apiPortQueue = new ConcurrentLinkedQueue<>();
     private final Queue<String> imageQueue = new ConcurrentLinkedQueue<>();
     private final Queue<String> imageJsonQueue = new ConcurrentLinkedQueue<>();
 
@@ -26,6 +27,10 @@ public class QueueHolder {
         return apiQueue;
     }
 
+    public Queue<String> getAPIPortQueue() {
+        return apiPortQueue;
+    }
+    
     public Queue<String> getImageQueue() {
         return imageQueue;
     }

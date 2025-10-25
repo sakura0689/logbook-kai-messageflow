@@ -71,13 +71,13 @@ public class BaseConsumer implements Runnable {
                     } else {
                         i++;
                         if (i % 100 == 0) {
-                            //ログ出力は10秒に1回にする
+                            //ログ出力は5秒に1回にする
                             logger.debug(queueName + " is empty...");
                             i =0;
                         }
                     }
                 }
-                Thread.sleep(100); // 100msスリープ
+                Thread.sleep(50); // 50msスリープ
             }
             logger.info(queueName + " Consumerを終了しました");
         } catch (InterruptedException e) {
