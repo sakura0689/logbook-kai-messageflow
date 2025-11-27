@@ -296,3 +296,34 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
     });
   }
 });
+
+let keepAlivePort;
+
+function connectKeepAlive() {
+  // serviceworkerのbackground.jsと接続
+  keepAlivePort = chrome.runtime.connect({ name: "logbook-kai-messageflow-keepalive" });
+
+  // 切断されたら再接続
+  keepAlivePort.onDisconnect.addListener(() => {
+    keepAlivePort = null;
+    // 1秒後に再接続試行
+    setTimeout(connectKeepAlive, 1000);
+  });
+}
+
+// 初回接続
+connectKeepAlive();
+
+// 25秒毎にkeepalive実施
+setInterval(() => {
+  if (keepAlivePort) {
+    try {
+      keepAlivePort.postMessage({ type: 'ping' });
+    } catch (e) {
+      // エラー再接続
+      connectKeepAlive();
+    }
+  } else {
+    connectKeepAlive();
+  }
+}, 25000);
