@@ -4,6 +4,9 @@
   "version": "1.0",
   "description": "航海日誌改へ通信ログを送信します",
   "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "background.js"
+  },
   "icons": {
     "128": "icon128.png"
   }
