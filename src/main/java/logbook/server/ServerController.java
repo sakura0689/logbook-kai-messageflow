@@ -56,6 +56,7 @@ public class ServerController {
         
         return ResponseEntity.ok()
                    .header(HttpHeaders.CONNECTION, "close")
+                   .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
                    .contentType(MediaType.TEXT_PLAIN)
                    .headers(headers)
                    .body(responseBody);
@@ -95,6 +96,7 @@ public class ServerController {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONNECTION, "close")
+                    .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
                     .contentType(MediaType.IMAGE_PNG)
                     .headers(headers)
                     .body(imageBytes);
@@ -104,6 +106,7 @@ public class ServerController {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONNECTION, "close")
+                    .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .headers(headers)
                     .body(responseBody);

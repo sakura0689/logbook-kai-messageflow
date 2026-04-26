@@ -40,6 +40,8 @@ public class ImageJsonConsumer extends BaseConsumer {
                     .header("Proxy-Connection", "keep-alive")
                     .header("x-koukainissikai", hashKey)
                     .header("x-koukainissikai-sendtype", "json")
+                    .header("x-koukainissikai-receivedat", getJsonToString(json, "receivedTime"))
+                    .header("x-koukainissikai-requestat", String.valueOf(System.currentTimeMillis()))
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
