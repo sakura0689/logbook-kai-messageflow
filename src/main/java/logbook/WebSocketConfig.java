@@ -19,9 +19,10 @@ import logbook.queue.QueueHolder;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
-    
+
     /**
      * https://docs.spring.io/spring-framework/reference/web/websocket/server.html#websocket-server-runtime-configuration
+     * 
      * @return
      */
     @Bean
@@ -31,34 +32,34 @@ public class WebSocketConfig implements WebSocketConfigurer {
         container.setMaxBinaryMessageBufferSize(32 * 1024 * 1024);
         return container;
     }
-    
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new ApiWebSocketHandler(), "/api").setAllowedOriginPatterns("*")
-                                                                                                    .withSockJS()
-                                                                                                        .setHeartbeatTime(20000) //20s
-                                                                                                        .setWebSocketEnabled(true)
-                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
-        
+                .withSockJS()
+                .setHeartbeatTime(20000) // 20s
+                .setWebSocketEnabled(true)
+                .setStreamBytesLimit(32 * 1024 * 1024); // 32M
+
         registry.addHandler(new ImageWebSocketHandler(), "/image").setAllowedOriginPatterns("*")
-                                                                                                    .withSockJS()
-                                                                                                        .setHeartbeatTime(20000) //20s
-                                                                                                        .setWebSocketEnabled(true)
-                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
-                                                                                                        
+                .withSockJS()
+                .setHeartbeatTime(20000) // 20s
+                .setWebSocketEnabled(true)
+                .setStreamBytesLimit(32 * 1024 * 1024); // 32M
+
         registry.addHandler(new ImageJsonWebSocketHandler(), "/imageJson").setAllowedOriginPatterns("*")
-                                                                                                    .withSockJS()
-                                                                                                        .setHeartbeatTime(20000) //20s
-                                                                                                        .setWebSocketEnabled(true)
-                                                                                                        .setStreamBytesLimit(32 * 1024 * 1024); //32M
-                                                                                                        
+                .withSockJS()
+                .setHeartbeatTime(20000) // 20s
+                .setWebSocketEnabled(true)
+                .setStreamBytesLimit(32 * 1024 * 1024); // 32M
+
     }
-    
+
     private static class ApiWebSocketHandler extends MyWebSocketHandler {
         public ApiWebSocketHandler() {
             super(WebSocketStatus.API);
         }
-        
+
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -73,10 +74,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 session.sendMessage(new TextMessage("shutdown"));
                 return;
             }
-            
-            //Queueに登録
+
+            // 通信を受け取った時間を追加
+            payload = addReceivedTime(payload);
+
+            // Queueに登録
             QueueHolder.getInstance().getAPIQueue().offer(payload);
-            
+
             session.sendMessage(new TextMessage("ok"));
         }
     }
@@ -85,14 +89,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public ImageWebSocketHandler() {
             super(WebSocketStatus.IMAGE);
         }
-        
+
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
             if (logger.isDebugEnabled()) {
                 logger.debug("image received message size : " + payload.length());
             }
-            
+
             // シャットダウン中ならスキップ
             if (QueueHolder.getInstance().isShuttingDown()) {
                 logger.warn("Image queue is shutting down. Skipping message processing.");
@@ -100,10 +104,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 session.sendMessage(new TextMessage("shutdown"));
                 return;
             }
-            
-            //Queueに登録
+
+            // 通信を受け取った時間を追加
+            payload = addReceivedTime(payload);
+
+            // Queueに登録
             QueueHolder.getInstance().getImageQueue().offer(payload);
-            
+
             session.sendMessage(new TextMessage("ok"));
         }
     }
@@ -112,7 +119,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public ImageJsonWebSocketHandler() {
             super(WebSocketStatus.IMAGE_JSON);
         }
-        
+
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
@@ -127,14 +134,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 session.sendMessage(new TextMessage("shutdown"));
                 return;
             }
-            
-            //Queueに登録
+
+            // 通信を受け取った時間を追加
+            payload = addReceivedTime(payload);
+
+            // Queueに登録
             QueueHolder.getInstance().getImageJsonQueue().offer(payload);
 
             session.sendMessage(new TextMessage("ok"));
         }
     }
-    
+
     private static class MyWebSocketHandler extends TextWebSocketHandler {
 
         private final WebSocketStatus status;
@@ -142,14 +152,14 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public MyWebSocketHandler(WebSocketStatus status) {
             this.status = status;
         }
-        
+
         @Override
         public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
             String payload = message.getPayload();
             if (logger.isDebugEnabled()) {
                 logger.debug("received message size : " + payload.length());
             }
-            
+
             session.sendMessage(new TextMessage("ok"));
         }
 
@@ -171,5 +181,19 @@ public class WebSocketConfig implements WebSocketConfigurer {
             logger.error("Transport error: " + exception.getMessage());
         }
 
+    }
+
+    /**
+     * payloadに受信時間を追加する
+     */
+    private static String addReceivedTime(String payload) {
+        if (payload == null) {
+            return null;
+        }
+        String trimmed = payload.trim();
+        if (trimmed.endsWith("}")) {
+            return trimmed.substring(0, trimmed.length() - 1) + ",\"receivedTime\":" + System.currentTimeMillis() + "}";
+        }
+        return payload;
     }
 }

@@ -41,6 +41,8 @@ public class ApiConsumer extends BaseConsumer {
                     .header("Host", LogBookKaiMessageFlowConfig.getInstance().getKoukainissikaiMessageFlowHost())
                     .header("Proxy-Connection", "keep-alive")
                     .header("x-koukainissikai", hashKey)
+                    .header("x-koukainissikai-receivedat", getJsonToString(json, "receivedTime"))
+                    .header("x-koukainissikai-requestat", String.valueOf(System.currentTimeMillis()))
                     .bodyValue(postData)
                     .retrieve()
                     .bodyToMono(String.class)

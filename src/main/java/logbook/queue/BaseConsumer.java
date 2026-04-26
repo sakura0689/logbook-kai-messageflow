@@ -99,6 +99,9 @@ public class BaseConsumer implements Runnable {
     
     protected String getJsonToString(JsonObject json, String key) {
         JsonValue jsonVal = json.get(key);
+        if (jsonVal == null) {
+            return "";
+        }
         if (jsonVal instanceof JsonString jsonString) {
             return jsonString.getString();
         }
