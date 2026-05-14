@@ -24,12 +24,16 @@ import logbook.queue.QueueName;
  */
 @RestController
 public class ServerController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ServerController.class);
-    
+    private static final Logger trafficLogger = LoggerFactory.getLogger("logbook.traffic");
+
     // `/kcsapi/`配下のAPIを処理
-    @RequestMapping(value = "/kcsapi/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+    @RequestMapping(value = "/kcsapi/**", method = { RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
+            RequestMethod.DELETE })
     public ResponseEntity<?> handleApiRequests(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        trafficLogger.info("Server機能処理開始(API): " + uri);
         String hashKey = request.getHeader("x-koukainissikai");
         if (logger.isDebugEnabled()) {
             request.getHeaderNames();
@@ -48,22 +52,25 @@ public class ServerController {
             logger.warn("Cache miss for key: " + hashKey);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.TEXT_PLAIN)
-                    .body("No data found : " + hashKey);   
+                    .body("No data found : " + hashKey);
         }
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(responseBody.length());
-        
+        trafficLogger.info("Server機能処理完了(API): " + uri + " APIDataSize " + responseBody.length());
+
         return ResponseEntity.ok()
-                   .header(HttpHeaders.CONNECTION, "close")
-                   .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
-                   .contentType(MediaType.TEXT_PLAIN)
-                   .headers(headers)
-                   .body(responseBody);
+                .header(HttpHeaders.CONNECTION, "close")
+                .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
+                .contentType(MediaType.TEXT_PLAIN)
+                .headers(headers)
+                .body(responseBody);
     }
-    
+
     @GetMapping(value = "/kcs2/**")
     public ResponseEntity<?> handleResourcesRequests(HttpServletRequest request) throws IOException {
+        String uri = request.getRequestURI();
+        trafficLogger.info("Server機能処理開始(Resource): " + uri);
         String hashKey = request.getHeader("x-koukainissikai");
         String sendType = request.getHeader("x-koukainissikai-sendtype");
         if (logger.isDebugEnabled()) {
@@ -83,9 +90,9 @@ public class ServerController {
             logger.warn("Cache miss for key: " + hashKey);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.TEXT_PLAIN)
-                    .body("No data found : " + hashKey);   
+                    .body("No data found : " + hashKey);
         }
-        
+
         if ("image".equals(sendType)) {
             // Base64 文字列をバイト配列にデコード
             byte[] imageBytes = Base64.getDecoder().decode(responseBody);
@@ -93,6 +100,8 @@ public class ServerController {
             // HTTP ヘッダーを設定
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(imageBytes.length);
+
+            trafficLogger.info("Server機能処理完了(Resource): " + uri + " ImageDataSize " + imageBytes.length);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONNECTION, "close")
@@ -104,15 +113,17 @@ public class ServerController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentLength(responseBody.length());
 
+            trafficLogger.info("Server機能処理完了(Resource): " + uri + " ImageJsonDataSize " + responseBody.length());
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONNECTION, "close")
                     .header("x-koukainissikai-responseat", String.valueOf(System.currentTimeMillis()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .headers(headers)
                     .body(responseBody);
-            
+
         }
         return ResponseEntity.ok().body("");
     }
-    
+
 }

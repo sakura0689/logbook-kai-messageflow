@@ -31,6 +31,8 @@ public class ImageJsonConsumer extends BaseConsumer {
             CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.IMAGEJSON);
             cacheHolder.put(hashKey, responseBody);
 
+            trafficLogger.info("通信処理開始(ImageJson): " + uri);
+            
             WebClient webClient = WebClientConfig.createCustomWebClient();
             String response = webClient.get()
                     .uri(uri)
@@ -44,7 +46,10 @@ public class ImageJsonConsumer extends BaseConsumer {
                     .header("x-koukainissikai-requestat", String.valueOf(System.currentTimeMillis()))
                     .retrieve()
                     .bodyToMono(String.class)
-                    .block();
+                    .block();            
+
+            trafficLogger.info("通信処理終了(ImageJson): " + uri);
+
             if (logger.isDebugEnabled()) {
                 logger.debug("response : " + response);
             }

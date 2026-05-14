@@ -32,6 +32,8 @@ public class ImageConsumer extends BaseConsumer {
             CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.IMAGE);
             cacheHolder.put(hashKey, responseBody);
 
+            trafficLogger.info("通信処理開始(Image): " + uri);
+            
             WebClient webClient = WebClientConfig.createCustomWebClient();
             byte[] response = webClient.get()
                     .uri(uri)
@@ -45,7 +47,10 @@ public class ImageConsumer extends BaseConsumer {
                     .header("x-koukainissikai-requestat", String.valueOf(System.currentTimeMillis()))
                     .retrieve()
                     .bodyToMono(byte[].class)
-                    .block();
+                    .block();            
+
+            trafficLogger.info("通信処理終了(Image): " + uri);
+
             if (logger.isDebugEnabled()) {
                 String base64Response = Base64.getEncoder().encodeToString(response);
                 logger.debug("response (Base64) : " + base64Response);
