@@ -15,6 +15,7 @@ import jakarta.json.JsonValue;
 public class BaseConsumer implements Runnable {
     
     private static final Logger logger = LoggerFactory.getLogger(BaseConsumer.class);
+    protected static final Logger trafficLogger = LoggerFactory.getLogger("logbook.traffic");
     
     private final QueueName queueName;
     

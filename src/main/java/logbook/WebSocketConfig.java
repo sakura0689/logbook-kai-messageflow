@@ -1,5 +1,7 @@
 package logbook;
 
+import java.io.StringReader;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,8 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
 import logbook.queue.QueueHolder;
 
 @Configuration
@@ -19,6 +23,7 @@ import logbook.queue.QueueHolder;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketConfig.class);
+    private static final Logger trafficLogger = LoggerFactory.getLogger("logbook.traffic");
 
     /**
      * https://docs.spring.io/spring-framework/reference/web/websocket/server.html#websocket-server-runtime-configuration
@@ -78,9 +83,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
             // 通信を受け取った時間を追加
             payload = addReceivedTime(payload);
 
+            String uri = "unknown";
+            try (JsonReader reader = Json.createReader(new StringReader(payload))) {
+                uri = reader.readObject().getString("uri", "unknown");
+            } catch (Exception e) {
+                // ignore
+            }
+
             // Queueに登録
             QueueHolder.getInstance().getAPIQueue().offer(payload);
 
+            trafficLogger.info("WebSocket受信(API): " + uri + " 受信バイト数 : " + payload.length());
             session.sendMessage(new TextMessage("ok"));
         }
     }
@@ -108,9 +121,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
             // 通信を受け取った時間を追加
             payload = addReceivedTime(payload);
 
+            String uri = "unknown";
+            try (JsonReader reader = Json.createReader(new StringReader(payload))) {
+                uri = reader.readObject().getString("uri", "unknown");
+            } catch (Exception e) {
+                // ignore
+            }
+
             // Queueに登録
             QueueHolder.getInstance().getImageQueue().offer(payload);
 
+            trafficLogger.info("WebSocket受信(Image): " + uri + " 受信バイト数 : " + payload.length());
             session.sendMessage(new TextMessage("ok"));
         }
     }
@@ -138,9 +159,17 @@ public class WebSocketConfig implements WebSocketConfigurer {
             // 通信を受け取った時間を追加
             payload = addReceivedTime(payload);
 
+            String uri = "unknown";
+            try (JsonReader reader = Json.createReader(new StringReader(payload))) {
+                uri = reader.readObject().getString("uri", "unknown");
+            } catch (Exception e) {
+                // ignore
+            }
+
             // Queueに登録
             QueueHolder.getInstance().getImageJsonQueue().offer(payload);
 
+            trafficLogger.info("WebSocket受信(ImageJson): " + uri + " 受信バイト数 : " + payload.length());
             session.sendMessage(new TextMessage("ok"));
         }
     }

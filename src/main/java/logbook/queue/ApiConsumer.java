@@ -32,6 +32,8 @@ public class ApiConsumer extends BaseConsumer {
             CacheHolder<String, String> cacheHolder = CacheHolder.getInstance(QueueName.API);
             cacheHolder.put(hashKey, responseBody);
             
+            trafficLogger.info("通信処理開始(API): " + uri);
+            
             WebClient webClient = WebClientConfig.createCustomWebClient();
             String response = webClient.post()
                     .uri(uri)
@@ -46,7 +48,10 @@ public class ApiConsumer extends BaseConsumer {
                     .bodyValue(postData)
                     .retrieve()
                     .bodyToMono(String.class)
-                    .block();
+                    .block();            
+
+            trafficLogger.info("通信処理終了(API): " + uri);
+
             if (logger.isDebugEnabled()) {
                 logger.debug("response : " + response);
             }
