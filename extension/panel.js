@@ -300,6 +300,15 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
 let keepAlivePort;
 
 function connectKeepAlive() {
+  if (keepAlivePort) {
+    try {
+      keepAlivePort.disconnect();
+    } catch (e) {
+      // NOP
+    }
+    keepAlivePort = null;
+  }
+
   // serviceworkerのbackground.jsと接続
   keepAlivePort = chrome.runtime.connect({ name: "logbook-kai-messageflow-keepalive" });
 
@@ -327,3 +336,8 @@ setInterval(() => {
     connectKeepAlive();
   }
 }, 25000);
+
+// 4分 (240,000ミリ秒) ごとにポートをリフレッシュして、Chromeの5分制限を回避する
+setInterval(() => {
+  connectKeepAlive();
+}, 240000);
