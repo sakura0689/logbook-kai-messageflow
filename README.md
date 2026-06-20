@@ -26,20 +26,20 @@
 ![Redhat](https://img.shields.io/badge/-Redhat-EE0000.svg?logo=red-hat)
 ![macOS](https://img.shields.io/badge/-macOS-333333.svg?logo=apple)
 
-Java17がインストールされたWindows,LinuxまたはmacOSが必要です。
+Java21がインストールされたWindows,LinuxまたはmacOSが必要です。
 
 **次のJavaVMで動作確認されています。**
-- **[Liberica JDK version 17](https://bell-sw.com/pages/downloads/#jdk-17-lts)**
+- **[Liberica JDK version 21](https://bell-sw.com/pages/downloads/#jdk-21-lts)**
    - 新規に導入する場合、こちらを推奨します。
-- [Oracle JDK 17](https://www.oracle.com/jp/java/technologies/downloads/)
+- [Oracle JDK 21](https://www.oracle.com/jp/java/technologies/downloads/#java21)
    - ダウンロードにOTNアカウントが必要です。
-   - 画面下部にJDK17のリンクがあります
+   - JDK21のリンクがあります
 
 次のJavaVMではご利用いただけません。
-- バージョンが17ではないJavaVM
+- バージョンが21ではないJavaVM
 
 **Macの場合、追加でJavaFx SDKをインストールしてください**
-- **[JavaFx version 17](https://gluonhq.com/products/javafx/)**
+- **[JavaFx version 21](https://gluonhq.com/products/javafx/)**
 
 ### ライセンス
 
